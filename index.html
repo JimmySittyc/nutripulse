@@ -1,17 +1,50 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>NutriPulse</title>
+
 <style>
-:root{font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;color-scheme:light dark;--bg:light-dark(#f5faf7,#0c1712);--surface:light-dark(#fff,#13221a);--surface2:light-dark(#eef7f1,#193024);--text:light-dark(#102018,#eef8f1);--muted:light-dark(#607068,#a8b9b0);--accent:#43c97b;--accent2:#2eaa67;--border:light-dark(#dbe8df,#284337);--danger:#ef6c72}
+:root{
+font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;
+color-scheme:light dark;
+--bg:light-dark(#f5faf7,#0c1712);
+--surface:light-dark(#fff,#13221a);
+--surface2:light-dark(#eef7f1,#193024);
+--text:light-dark(#102018,#eef8f1);
+--muted:light-dark(#607068,#a8b9b0);
+--accent:#43c97b;
+--accent2:#2eaa67;
+--border:light-dark(#dbe8df,#284337);
+--danger:#ef6c72
+}
 
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text)}
-#app{min-height:100vh;background:var(--bg)}
-button,input{font:inherit}
-button{cursor:pointer;border:0}
-.hidden{display:none!important}
+
+body{
+margin:0;
+background:var(--bg);
+color:var(--text)
+}
+
+#app{
+min-height:100vh;
+background:var(--bg)
+}
+
+button,input{
+font:inherit
+}
+
+button{
+cursor:pointer;
+border:0
+}
+
+.hidden{
+display:none!important
+}
 
 .shell{
 max-width:1180px;
@@ -361,26 +394,21 @@ padding:24px
 </head>
 
 <body>
-
 <div id="app"></div>
 
 <script>
 
 const meals=[
- ['🥣','Greek Yogurt Power Bowl','Greek yogurt, berries, oats & chia',24,48,12],
- ['🍗','Chicken Quinoa Bowl','Grilled chicken, quinoa, greens & avocado',43,42,17],
- ['🥑','Avocado Egg Toast','Whole-grain toast, eggs, avocado & tomato',21,31,22],
- ['🐟','Salmon Rice Plate','Salmon, brown rice, broccoli & lemon',38,45,20],
- ['🌯','Turkey Hummus Wrap','Turkey, hummus, whole-wheat wrap & vegetables',32,39,14],
- ['🍝','Lentil Pasta','Lentil pasta, tomato sauce, spinach & parmesan',27,55,10]
+['🥣','Greek Yogurt Power Bowl','Greek yogurt, berries, oats & chia',24,48,12],
+['🍗','Chicken Quinoa Bowl','Grilled chicken, quinoa, greens & avocado',43,42,17],
+['🥑','Avocado Egg Toast','Whole-grain toast, eggs, avocado & tomato',21,31,22],
+['🐟','Salmon Rice Plate','Salmon, brown rice, broccoli & lemon',38,45,20],
+['🌯','Turkey Hummus Wrap','Turkey, hummus, whole-wheat wrap & vegetables',32,39,14],
+['🍝','Lentil Pasta','Lentil pasta, tomato sauce, spinach & parmesan',27,55,10]
 ];
 
 let ingredients=[];
 
-
-/* =========================
-   ACCOUNT CREATION
-========================= */
 
 function renderAuth(){
 
@@ -412,7 +440,7 @@ line-height:1.5">
 <br>
 
 Create your account below.
-Your next screen will ask for your height and weight.
+Your next screen will ask for height and weight.
 
 </div>
 
@@ -457,9 +485,7 @@ Continue →
 </button>
 
 <div class="demo">
-
 Demo prototype — account data stays in this browser.
-
 </div>
 
 </div>
@@ -470,10 +496,6 @@ Demo prototype — account data stays in this browser.
 
 }
 
-
-/* =========================
-   SIGN UP
-========================= */
 
 function signup(){
 
@@ -490,7 +512,6 @@ alert(
 );
 
 return;
-
 }
 
 localStorage.setItem('npUser',n);
@@ -499,10 +520,6 @@ renderProfile();
 
 }
 
-
-/* =========================
-   HEIGHT + WEIGHT
-========================= */
 
 function renderProfile(){
 
@@ -529,7 +546,9 @@ padding:13px;
 font-size:13px;
 line-height:1.5">
 
-<b style="color:var(--accent)">Step 2 of 2</b>
+<b style="color:var(--accent)">
+Step 2 of 2
+</b>
 
 <br>
 
@@ -612,7 +631,6 @@ alert(
 );
 
 return;
-
 }
 
 localStorage.setItem('npHeight',h);
@@ -624,10 +642,6 @@ renderMain();
 }
 
 
-/* =========================
-   MAIN PAGE
-========================= */
-
 function renderMain(){
 
 let n=localStorage.getItem('npUser')||'there';
@@ -636,18 +650,16 @@ let h=localStorage.getItem('npHeight')||'';
 
 let w=localStorage.getItem('npWeight')||'';
 
+
 app.innerHTML=`
 
 <div class="shell">
-
 
 <div class="topbar">
 
 <div class="brand">
 
-<div class="logo">
-NP
-</div>
+<div class="logo">NP</div>
 
 <div>
 
@@ -734,8 +746,6 @@ Eat with intention
 </div>
 
 
-<!-- HEALTHY MEALS -->
-
 <div class="section">
 
 <div class="section-head">
@@ -809,8 +819,6 @@ ${m[2]}
 </div>
 
 
-<!-- RECIPE BUILDER -->
-
 <div class="section">
 
 <div class="section-head">
@@ -843,8 +851,6 @@ Use what you have
 
 <div class="builder">
 
-
-<!-- INGREDIENT PANEL -->
 
 <div class="panel">
 
@@ -927,8 +933,6 @@ id="notice">
 </div>
 
 
-<!-- MACRO PANEL -->
-
 <div class="panel">
 
 <h3>
@@ -1002,9 +1006,7 @@ placeholder="15">
 
 <button
 class="btn primary"
-style="
-width:100%;
-margin-top:16px"
+style="width:100%;margin-top:16px"
 onclick="buildRecipe()">
 
 Generate my recipe →
@@ -1029,7 +1031,6 @@ and should be checked against product labels.
 
 </div>
 
-
 </div>
 
 `;
@@ -1038,10 +1039,6 @@ drawChips();
 
 }
 
-
-/* =========================
-   ADD INGREDIENT
-========================= */
 
 function addIng(){
 
@@ -1065,10 +1062,6 @@ drawChips();
 }
 
 
-/* =========================
-   DISPLAY INGREDIENTS
-========================= */
-
 function drawChips(){
 
 let c=document.getElementById('chips');
@@ -1079,7 +1072,9 @@ c.innerHTML=ingredients.map((i,k)=>`
 
 <span class="chip">
 
-${esc(i.x)} · ${esc(i.a)}
+${esc(i.x)}
+·
+${esc(i.a)}
 
 <button
 onclick="ingredients.splice(${k},1);drawChips()">
@@ -1094,10 +1089,6 @@ onclick="ingredients.splice(${k},1);drawChips()">
 
 }
 
-
-/* =========================
-   RECIPE GENERATOR
-========================= */
 
 function buildRecipe(){
 
@@ -1132,27 +1123,27 @@ return;
 }
 
 
-let main=
-ingredients
+let main=ingredients
 .map(i=>`${i.a} ${i.x}`)
 .join(', ');
 
 
-let protein=
-p?`${p}g protein`:'';
+let protein=p?`${p}g protein`:'';
 
-let carbs=
-c?`${c}g carbs`:'';
+let carbs=c?`${c}g carbs`:'';
 
-let fat=
-f?`${f}g fat`:'';
+let fat=f?`${f}g fat`:'';
 
 
 let steps=
 ingredients.length>2
+
 ?
+
 'Prep the ingredients, cook proteins/grains as needed, combine everything in a bowl, and finish with herbs or lemon.'
+
 :
+
 'Prepare the ingredients, cook until safely done, then combine and season to taste.';
 
 
@@ -1165,25 +1156,15 @@ document.getElementById('recipe').innerHTML=`
 </h4>
 
 <p>
-
-<b>
-Target:
-</b>
-
+<b>Target:</b>
 ${protein}
 ${carbs}
 ${fat}
-
 </p>
 
 <p>
-
-<b>
-Ingredients:
-</b>
-
+<b>Ingredients:</b>
 ${esc(main)}
-
 </p>
 
 <ul>
@@ -1209,10 +1190,6 @@ Check package labels for the most accurate nutrition numbers.
 }
 
 
-/* =========================
-   LOG OUT
-========================= */
-
 function logout(){
 
 localStorage.removeItem('npUser');
@@ -1228,40 +1205,32 @@ renderAuth();
 }
 
 
-/* =========================
-   HTML ESCAPE
-========================= */
-
 function esc(s){
 
 return String(s).replace(
 /[&<>'"]/g,
-
 m=>({
-
 '&':'&amp;',
 '<':'&lt;',
 '>':'&gt;',
 "'":'&#39;',
 '"':'&quot;'
-
 }[m])
-
 );
 
 }
 
 
-/* =========================
-   INITIAL PAGE
-========================= */
-
 localStorage.getItem('npUser') &&
 localStorage.getItem('npHeight') &&
 localStorage.getItem('npWeight')
+
 ?
+
 renderMain()
+
 :
+
 renderAuth();
 
 </script>
