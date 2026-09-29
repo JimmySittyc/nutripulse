@@ -1,1 +1,360 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NutriPulse</title>
+<style>
+:root{font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;color-scheme:light dark;--bg:light-dark(#f5faf7,#0c1712);--surface:light-dark(#fff,#13221a);--surface2:light-dark(#eef7f1,#193024);--text:light-dark(#102018,#eef8f1);--muted:light-dark(#607068,#a8b9b0);--accent:#43c97b;--accent2:#2eaa67;--border:light-dark(#dbe8df,#284337);--danger:#ef6c72}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text)}#app{min-height:100vh;background:var(--bg)}button,input{font:inherit}button{cursor:pointer;border:0}.hidden{display:none!important}.shell{max-width:1180px;margin:auto;padding:28px 22px 50px}.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px}.brand{display:flex;gap:12px;align-items:center}.logo{width:42px;height:42px;border-radius:13px;background:linear-gradient(135deg,var(--accent),#9be7bb);display:grid;place-items:center;color:#062412;font-weight:900}.brand h1{font-size:22px;margin:0}.brand small{color:var(--muted)}.btn{padding:11px 16px;border-radius:12px;background:var(--surface2);color:var(--text);border:1px solid var(--border)}.primary{background:var(--accent);color:#062412;font-weight:800}.auth{min-height:100vh;display:grid;place-items:center;padding:24px}.auth-card{width:min(440px,100%);background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:34px;box-shadow:0 20px 60px #00000012}.auth-card h2{font-size:32px;margin:14px 0 8px}.auth-card p{color:var(--muted);line-height:1.5}.field{margin:16px 0}.field label{display:block;font-size:13px;font-weight:700;margin-bottom:7px}.field input{width:100%;padding:13px;border-radius:12px;border:1px solid var(--border);background:var(--surface2);color:var(--text);outline:none}.field input:focus{border-color:var(--accent)}.auth-card .btn{width:100%;margin-top:8px}.demo{font-size:12px;color:var(--muted);text-align:center;margin-top:14px}.hero{background:linear-gradient(135deg,#163b29,#1d6b46);border-radius:24px;padding:28px;color:white;display:flex;justify-content:space-between;gap:20px;align-items:center}.hero h2{margin:0 0 7px;font-size:30px}.hero p{margin:0;color:#d9f5e5}.hero-stat{text-align:right}.hero-stat b{font-size:30px}.section{margin-top:28px}.section-head{display:flex;justify-content:space-between;align-items:end;margin-bottom:14px}.section h3{margin:0;font-size:21px}.section-head span{color:var(--muted);font-size:13px}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}.meal{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:18px;transition:.15s}.meal:hover{transform:translateY(-2px);border-color:#62d695}.meal-icon{font-size:30px}.meal h4{margin:10px 0 5px;font-size:17px}.meal p{margin:0;color:var(--muted);font-size:13px;min-height:38px}.macros{display:flex;gap:8px;margin-top:15px;flex-wrap:wrap}.macro{font-size:12px;padding:7px 9px;border-radius:9px;background:var(--surface2)}.macro b{color:var(--accent)}.builder{display:grid;grid-template-columns:1fr 1fr;gap:18px}.panel{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:20px}.panel h3{margin-top:0}.row{display:flex;gap:10px}.row .field{flex:1}.targets{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.targets input{width:100%;padding:11px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--text)}.ingredient-list{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 14px}.chip{background:var(--surface2);border:1px solid var(--border);border-radius:999px;padding:8px 10px;font-size:13px}.chip button{background:none;color:var(--muted);margin-left:5px}.result{background:linear-gradient(135deg,var(--surface2),var(--surface));border:1px solid var(--border);border-radius:16px;padding:16px;margin-top:15px}.result h4{margin:0 0 8px}.result ul{padding-left:20px;color:var(--muted);line-height:1.6}.notice{color:var(--danger);font-size:12px;margin-top:8px}.footer{text-align:center;color:var(--muted);font-size:12px;margin-top:34px}@media(max-width:850px){.cards{grid-template-columns:1fr 1fr}.builder{grid-template-columns:1fr}.hero{align-items:flex-start;flex-direction:column}.hero-stat{text-align:left}}@media(max-width:560px){.cards{grid-template-columns:1fr}.targets{grid-template-columns:1fr}.auth-card{padding:24px}}
+</style></head>
+<body><div id="app"></div>
+<script>
+const meals=[
+ ['🥣','Greek Yogurt Power Bowl','Greek yogurt, berries, oats & chia',24,48,12],
+ ['🍗','Chicken Quinoa Bowl','Grilled chicken, quinoa, greens & avocado',43,42,17],
+ ['🥑','Avocado Egg Toast','Whole-grain toast, eggs, avocado & tomato',21,31,22],
+ ['🐟','Salmon Rice Plate','Salmon, brown rice, broccoli & lemon',38,45,20],
+ ['🌯','Turkey Hummus Wrap','Turkey, hummus, whole-wheat wrap & vegetables',32,39,14],
+ ['🍝','Lentil Pasta','Lentil pasta, tomato sauce, spinach & parmesan',27,55,10]
+];
 
+let ingredients=[];
+
+function renderAuth(){
+app.innerHTML=`
+<div class="auth">
+<div class="auth-card">
+<div class="logo">NP</div>
+<h2>Welcome to NutriPulse</h2>
+<p>Create your account to start planning meals around the food you already have and the macros you want.</p>
+
+<div class="field">
+<label>Name</label>
+<input id="name" placeholder="Your name">
+</div>
+
+<div class="field">
+<label>Email</label>
+<input id="email" type="email" placeholder="you@example.com">
+</div>
+
+<div class="field">
+<label>Password</label>
+<input id="pass" type="password" placeholder="Create a password">
+</div>
+
+<button class="btn primary" onclick="signup()">
+Create account & continue
+</button>
+
+<div class="demo">
+Demo prototype — account data stays in this browser.
+</div>
+</div>
+</div>`;
+}
+
+function signup(){
+let n=document.getElementById('name').value.trim();
+let e=document.getElementById('email').value.trim();
+let p=document.getElementById('pass').value;
+
+if(!n||!e||p.length<4){
+alert('Please enter your name, a valid email, and a password of at least 4 characters.');
+return;
+}
+
+localStorage.setItem('npUser',n);
+renderMain();
+}
+
+function renderMain(){
+let n=localStorage.getItem('npUser')||'there';
+
+app.innerHTML=`
+<div class="shell">
+
+<div class="topbar">
+<div class="brand">
+<div class="logo">NP</div>
+<div>
+<h1>NutriPulse</h1>
+<small>Smart nutrition, made personal</small>
+</div>
+</div>
+
+<button class="btn" onclick="logout()">Log out</button>
+</div>
+
+<div class="hero">
+<div>
+<h2>Good to see you, ${esc(n)} 👋</h2>
+<p>Build meals that fit your ingredients and your macro targets.</p>
+</div>
+
+<div class="hero-stat">
+<small>Today's focus</small>
+<br>
+<b>Eat with intention</b>
+</div>
+</div>
+
+<div class="section">
+
+<div class="section-head">
+<h3>Healthy meals</h3>
+<span>Macros per serving</span>
+</div>
+
+<div class="cards">
+
+${meals.map(m=>`
+<div class="meal">
+
+<div class="meal-icon">${m[0]}</div>
+
+<h4>${m[1]}</h4>
+
+<p>${m[2]}</p>
+
+<div class="macros">
+
+<span class="macro">
+<b>${m[3]}g</b> protein
+</span>
+
+<span class="macro">
+<b>${m[4]}g</b> carbs
+</span>
+
+<span class="macro">
+<b>${m[5]}g</b> fat
+</span>
+
+</div>
+
+</div>
+`).join('')}
+
+</div>
+</div>
+
+<div class="section">
+
+<div class="section-head">
+<h3>✨ Recipe Builder</h3>
+<span>Use what you have</span>
+</div>
+
+<div class="builder">
+
+<div class="panel">
+
+<h3>Your ingredients</h3>
+
+<div class="row">
+
+<div class="field">
+<label>Ingredient</label>
+<input id="ing" placeholder="e.g. chicken breast">
+</div>
+
+<div class="field" style="max-width:130px">
+<label>Amount</label>
+<input id="amt" placeholder="150 g">
+</div>
+
+</div>
+
+<button class="btn" onclick="addIng()">
++ Add ingredient
+</button>
+
+<div class="ingredient-list" id="chips"></div>
+
+<div class="notice" id="notice"></div>
+
+</div>
+
+<div class="panel">
+
+<h3>Your macro target</h3>
+
+<div class="targets">
+
+<div>
+<label>Protein (g)</label>
+<input id="tp" type="number" min="0" placeholder="35">
+</div>
+
+<div>
+<label>Carbs (g)</label>
+<input id="tc" type="number" min="0" placeholder="45">
+</div>
+
+<div>
+<label>Fat (g)</label>
+<input id="tf" type="number" min="0" placeholder="15">
+</div>
+
+</div>
+
+<button
+class="btn primary"
+style="width:100%;margin-top:16px"
+onclick="buildRecipe()">
+Generate my recipe
+</button>
+
+<div id="recipe"></div>
+
+</div>
+</div>
+
+</div>
+
+<div class="footer">
+NutriPulse prototype • Macro values are estimates and should be checked against product labels.
+</div>
+
+</div>`;
+
+drawChips();
+}
+
+function addIng(){
+
+let x=document.getElementById('ing').value.trim();
+let a=document.getElementById('amt').value.trim();
+
+if(!x)return;
+
+ingredients.push({
+x,
+a:a||'as needed'
+});
+
+document.getElementById('ing').value='';
+document.getElementById('amt').value='';
+
+drawChips();
+}
+
+function drawChips(){
+
+let c=document.getElementById('chips');
+
+if(!c)return;
+
+c.innerHTML=ingredients.map((i,k)=>`
+<span class="chip">
+${esc(i.x)} · ${esc(i.a)}
+
+<button onclick="ingredients.splice(${k},1);drawChips()">
+×
+</button>
+
+</span>
+`).join('');
+}
+
+function buildRecipe(){
+
+let p=+tp.value||0;
+let c=+tc.value||0;
+let f=+tf.value||0;
+
+let notice=document.getElementById('notice');
+
+notice.textContent='';
+
+if(!ingredients.length){
+notice.textContent='Add at least one ingredient first.';
+return;
+}
+
+if(!p&&!c&&!f){
+notice.textContent='Add at least one macro target.';
+return;
+}
+
+let main=ingredients
+.map(i=>`${i.a} ${i.x}`)
+.join(', ');
+
+let protein=p?`${p}g protein`:'';
+let carbs=c?`${c}g carbs`:'';
+let fat=f?`${f}g fat`:'';
+
+let steps=ingredients.length>2
+?'Prep the ingredients, cook proteins/grains as needed, combine everything in a bowl, and finish with herbs or lemon.'
+:'Prepare the ingredients, cook until safely done, then combine and season to taste.';
+
+document.getElementById('recipe').innerHTML=`
+
+<div class="result">
+
+<h4>🥗 ${esc(ingredients[0].x)} Macro Bowl</h4>
+
+<p>
+<b>Target:</b>
+${protein}
+${carbs}
+${fat}
+</p>
+
+<p>
+<b>Ingredients:</b>
+${esc(main)}
+</p>
+
+<ul>
+
+<li>
+${esc(steps)}
+</li>
+
+<li>
+Adjust ingredient portions to move closer to your target macros.
+</li>
+
+<li>
+Check package labels for the most accurate nutrition numbers.
+</li>
+
+</ul>
+
+</div>`;
+}
+
+function logout(){
+
+localStorage.removeItem('npUser');
+
+ingredients=[];
+
+renderAuth();
+}
+
+function esc(s){
+
+return String(s).replace(
+/[&<>'"]/g,
+m=>({
+'&':'&amp;',
+'<':'&lt;',
+'>':'&gt;',
+"'":'&#39;',
+'"':'&quot;'
+}[m])
+);
+
+}
+
+localStorage.getItem('npUser')
+?renderMain()
+:renderAuth();
+
+</script>
+</body>
+</html>
