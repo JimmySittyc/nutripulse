@@ -39,7 +39,7 @@ nav button{flex:1;background:none;padding:10px;color:var(--mu);font-weight:600}n
 <script>
 const $=s=>document.querySelector(s),app=$('#app'),mem={};
 const store={get(k,d){try{const v=localStorage.getItem(k);if(v!==null)return JSON.parse(v)}catch(e){}return k in mem?mem[k]:d},
- set(k,v){mem[k]=v;try{localStorage.setItem(k,JSON.stringify(v))}catch(e){} }};
+ set(k,v){mem[k]=v;try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 const esc=s=>String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const r0=n=>Math.round(n),r1=n=>Math.round(n*10)/10;
 
@@ -67,6 +67,7 @@ const RAW=[
 ];
 const F=RAW.map((r,i)=>({id:'f'+i,name:r[0],cat:r[1],k:r[2],p:r[3],c:r[4],f:r[5],sv:r[6],u:r[7]}));
 
+/* ---------- Data (kept in this browser's localStorage) ---------- */
 let prof=store.get('np_profile',null),custom=store.get('np_custom',[]),log=store.get('np_log',{}),water=store.get('np_water',{});
 const allFoods=()=>[...F,...custom];
 let pantry=store.get('np_pantry',[]),groc=store.get('np_groc',[]),proUntil=store.get('np_pro',0);
@@ -80,14 +81,16 @@ const hr=new Date().getHours();
 const S={tab:'today',date:today,q:'',cat:-1,meal:hr<11?'Breakfast':hr<15?'Lunch':hr<20?'Dinner':'Snacks',rc:false,rec:{name:'',serv:1,items:[]},gen:null,tgt:null};
 const mac=(x,g)=>({k:x.k*g/100,p:x.p*g/100,c:x.c*g/100,f:x.f*g/100});
 
+/* ---------- Calculator: Mifflin-St Jeor BMR x activity, adjusted for goal ---------- */
 const ACT=[['Sedentary (little exercise)',1.2],['Light (1-3 days/week)',1.375],['Moderate (3-5 days/week)',1.55],['Very active (6-7 days/week)',1.725],['Athlete or physical job',1.9]];
 const GOALS=[['lose','Lose weight (about -20%)',.8,2.0],['keep','Maintain weight',1,1.6],['gain','Build muscle (about +10%)',1.1,1.8]];
 function calc(p){
  const bmr=10*p.w+6.25*p.h-5*p.a+(p.sex==='m'?5:-161),tdee=bmr*ACT[p.act][1],g=GOALS.find(x=>x[0]===p.goal);
- const kcal=Math.max(tdee*g[2],p.sex==='m'?1500:1200),pro=r0(g[3]*p.w),fat=r0(kcal*.25/9);
+ const kcal=Math.max(tdee*g[2],p.sex==='m'?1500:1200),pro=r0(g[3]p.w),fat=r0(kcal.25/9);
  return{bmr:r0(bmr),tdee:r0(tdee),k:r0(kcal),p:pro,f:fat,c:Math.max(0,r0((kcal-pro*4-fat*9)/4)),w:r0(p.w*35/50)*50};
 }
 
+/* ---------- Views ---------- */
 function totals(day){return(log[day]||[]).reduce((t,e)=>({k:t.k+e.k,p:t.p+e.p,c:t.c+e.c,f:t.f+e.f}),{k:0,p:0,c:0,f:0})}
 function dayLabel(s){return s===today?'Today':s===shift(today,-1)?'Yesterday':new Date(s+'T12:00:00').toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})}
 function bar(label,v,t,unit){const pc=t?Math.min(100,v/t*100):0;return`<div class="mrow"><span>${label}</span><span>${r0(v)} / ${t} ${unit}</span></div><div class="bar"><i style="width:${pc}%${v>t?';background:var(--dn)':''}"></i></div>`}
@@ -95,7 +98,7 @@ function todayView(){
  const T=calc(prof),t=totals(S.date),rem=T.k-t.k,C=2*Math.PI*52,pc=Math.min(1,t.k/T.k),wm=water[S.date]||0;
  const mealHTML=MEALS.map(m=>{const es=(log[S.date]||[]).filter(e=>e.meal===m),k=es.reduce((a,e)=>a+e.k,0);
   return`<div class="cd"><div class="mh"><div><b>${m}</b><small>${r0(k)} kcal</small></div><button class="bt" data-a="addto" data-d="${m}">+ Add</button></div>`+
-  es.map(e=><div class="it" style="cursor:default"><div><b>${esc(e.name)}</b><small>${r0(e.g)} g · P ${r1(e.p)} · C ${r1(e.c)} · F ${r1(e.f)}</small></div><div class="mc">${r0(e.k)} kcal<button class="x" data-a="del" data-d="${e.id}">✕</button></div></div>`).join('')+'</div>'}).join('');
+  es.map(e=><div class="it" style="cursor:default"><div><b>${esc(e.name)}</b><small>${r0(e.g)} g · P ${r1(e.p)} · C ${r1(e.c)} · F ${r1(e.f)}</small></div><div class="mc">${r0(e.k)} kcal<button class="x" data-a="del" data-d="${e.id}">✕</button></div></div>).join('')+</div>}).join('');
  return`<div class="top"><div class="logo">Nutri<b>Pulse</b></div><small>Hi, ${esc(prof.name||'there')}</small></div>
  <div class="dn" style="margin-top:14px"><button class="bt" data-a="day" data-d="-1">‹</button><b>${dayLabel(S.date)}</b><button class="bt" data-a="day" data-d="1" ${S.date>=today?'disabled style="opacity:.4"':''}>›</button></div>
  <div class="cd"><div class="ringrow"><div class="ring"><svg width="130" height="130"><circle cx="65" cy="65" r="52" fill="none" stroke="var(--s2)" stroke-width="12"/><circle cx="65" cy="65" r="52" fill="none" stroke="${rem<0?'var(--dn)':'var(--ac)'}" stroke-width="12" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C*(1-pc)}"/></svg><div><b>${r0(Math.abs(rem))}</b><small>${rem<0?'kcal over':'kcal left'}</small></div></div>
@@ -107,7 +110,7 @@ function ideas(r){
  if(r.k<120)return'';
  const c=allFoods().map(x=>({x,m:mac(x,x.sv)})).filter(o=>o.m.k<=r.k&&o.m.p>=8&&o.m.f<=Math.max(r.f,0)+3).sort((a,b)=>b.m.p/b.m.k-a.m.p/a.m.k).slice(0,4);
  if(!c.length)return'';
- return`<div class="cd"><b>Fits your remaining macros</b><small>Tap to log a serving</small>${c.map(o=><div class="it" data-a="pick" data-d="${o.x.id}"><div><b>${esc(o.x.name)}</b><small>${o.x.u} · ${o.x.sv} g</small></div><div class="mc">${r0(o.m.k)} kcal<small>P ${r0(o.m.p)}g</small></div></div>`).join('')}</div>`}
+ return`<div class="cd"><b>Fits your remaining macros</b><small>Tap to log a serving</small>${c.map(o=><div class="it" data-a="pick" data-d="${o.x.id}"><div><b>${esc(o.x.name)}</b><small>${o.x.u} · ${o.x.sv} g</small></div><div class="mc">${r0(o.m.k)} kcal<small>P ${r0(o.m.p)}g</small></div></div>).join('')}</div>`}
 function foodsView(){
  return`<div class="top"><h2>Food database</h2><small>${allFoods().length} foods</small></div>
  <div class="row" style="margin-top:12px"><label style="margin:0">Barcode<input id="bc" inputmode="numeric" placeholder="Type a barcode"></label><button class="bt" data-a="bcfind">Find</button>${'BarcodeDetector' in window?'<button class="bt" data-a="bcscan">Scan</button>':''}</div><div class="mu" id="bcm" style="font-size:13px;margin-top:6px"></div><video id="vid" playsinline muted style="display:none;width:100%;border-radius:12px;margin-top:8px"></video>
@@ -124,36 +127,36 @@ function foodsView(){
 function foodList(){
  const q=$('#q').value.trim().toLowerCase();S.q=q;
  const r=allFoods().filter(x=>(S.cat<0||x.cat===S.cat)&&(!q||x.name.toLowerCase().includes(q))).sort((a,b)=>a.name.localeCompare(b.name));
- $('#res').innerHTML=r.length?r.map(x=>`<div class="it" data-a="pick" data-d="${x.id}"><div><b>${esc(x.name)}</b><small>${CATS[x.cat]} · per 100 g</small></div><div class="mc">${r0(x.k)} kcal<small>P ${r1(x.p)} · C ${r1(x.c)} · F ${r1(x.f)}</small>${x.id[0]==='c'?`<button class="x" data-a="delfood" data-d="${x.id}">delete</button>`:''}</div></div>`).join(''):'<span class="mu">No foods found. Create a custom food below.</span>'}
+ $('#res').innerHTML=r.length?r.map(x=><div class="it" data-a="pick" data-d="${x.id}"><div><b>${esc(x.name)}</b><small>${CATS[x.cat]} · per 100 g</small></div><div class="mc">${r0(x.k)} kcal<small>P ${r1(x.p)} · C ${r1(x.c)} · F ${r1(x.f)}</small>${x.id[0]==='c'?<button class="x" data-a="delfood" data-d="${x.id}">delete</button>:''}</div></div>).join(''):'<span class="mu">No foods found. Create a custom food below.</span>'}
 function profileView(first){
  const p=prof||{name:'',sex:'m',a:'',h:'',w:'',act:1,goal:'keep'},T=prof?calc(prof):null;
  return`<div class="${first?'wrap':''}">${first?'<div class="logo">Nutri<b>Pulse</b></div><h2 style="margin-top:14px">Set up your profile</h2><p class="mu">We use your details to calculate your daily calories and macros.</p>':'<h2>Profile</h2>'}
  <div class="cd" style="margin-top:12px"><label>Name<input id="pn" value="${esc(p.name)}"></label>
  <div class="two"><label>Sex (for the formula)<select id="ps"><option value="m" ${p.sex==='m'?'selected':''}>Male</option><option value="f" ${p.sex==='f'?'selected':''}>Female</option></select></label><label>Age<input id="pa" type="number" inputmode="numeric" value="${p.a}" placeholder="years"></label>
  <label>Height (cm)<input id="ph" type="number" inputmode="decimal" value="${p.h}" placeholder="175"></label><label>Weight (kg)<input id="pw" type="number" inputmode="decimal" value="${p.w}" placeholder="70"></label></div>
- <label>Activity level<select id="pc">${ACT.map((a,i)=>`<option value="${i}" ${p.act===i?'selected':''}>${a[0]}</option>`).join('')}</select></label>
- <label>Goal<select id="pg">${GOALS.map(g=>`<option value="${g[0]}" ${p.goal===g[0]?'selected':''}>${g[1]}</option>`).join('')}</select></label>
+ <label>Activity level<select id="pc">${ACT.map((a,i)=><option value="${i}" ${p.act===i?'selected':''}>${a[0]}</option>).join('')}</select></label>
+ <label>Goal<select id="pg">${GOALS.map(g=><option value="${g[0]}" ${p.goal===g[0]?'selected':''}>${g[1]}</option>).join('')}</select></label>
  <div class="err" id="perr"></div><button class="bt pr" data-a="saveprof">${first?'Calculate my targets →':'Save and recalculate'}</button></div>
  ${T?`<div class="cd"><b>Your daily targets</b><div class="pv" style="margin-top:8px"><span>Calories <b>${T.k}</b></span><span>Protein <b>${T.p} g</b></span><span>Carbs <b>${T.c} g</b></span><span>Fat <b>${T.f} g</b></span><span>Water <b>${T.w} ml</b></span></div><small style="margin-top:10px">Resting energy (BMR) ${T.bmr} kcal · Maintenance (TDEE) ${T.tdee} kcal. Protein is set per kg of body weight, fat is 25% of calories, and carbs fill the rest.</small></div>
  <div class="cd"><button class="bt" data-a="reset" style="width:100%;color:var(--dn)">${S.rc?'Tap again to erase all data':'Erase all my data'}</button></div>`:''}
  <p class="mu" style="font-size:12px;margin-top:16px">Estimates only, not medical advice. Food values are typical and vary by brand and preparation. Your data is saved only in this browser.</p></div>`}
 
-function hook(r){return r.p<10||r.k<150?'':`<div class="cd" style="border-color:var(--ac)"><b>You have ${r0(r.p)} g protein and ${r0(Math.max(r.f,0))} g fat left</b><small>Unlock Pro to see what you can cook right now with your pantry.</small><button class="bt pr" data-a="tab" data-d="pro">See NutriPulse Pro</button></div>`}
+function hook(r){return r.p<10||r.k<150?'':<div class="cd" style="border-color:var(--ac)"><b>You have ${r0(r.p)} g protein and ${r0(Math.max(r.f,0))} g fat left</b><small>Unlock Pro to see what you can cook right now with your pantry.</small><button class="bt pr" data-a="tab" data-d="pro">See NutriPulse Pro</button></div>}
 function sponsor(){return`<div class="cd"><span class="tag">Patrocinado</span><b style="display:block;margin-top:8px">Recipe of the week</b><small>Demo sponsor slot. Local food brands can feature a nutritionist-reviewed recipe here. Pro removes ads.</small></div>`}
 function recTot(){const T={k:0,p:0,c:0,f:0};let g=0;S.rec.items.forEach(i=>{const x=byId(i.id);if(!x)return;const m=mac(x,i.g);T.k+=m.k;T.p+=m.p;T.c+=m.c;T.f+=m.f;g+=i.g});return{T,g}}
 function recipeCard(){const{T,g}=recTot(),s=S.rec.serv;
  return`<div class="cd"><b>Create a custom recipe</b><small>Combine foods into one recipe you can log</small>
  <div class="two"><label>Recipe name<input id="rn" value="${esc(S.rec.name)}"></label><label>Servings<input id="rs" type="number" min="1" value="${s}"></label></div>
  <div class="row" style="margin-top:6px"><label style="margin:0">Ingredient<input id="ri" list="fl" placeholder="Start typing…"></label><label style="margin:0;max-width:100px">Grams<input id="rg" type="number" inputmode="decimal"></label><button class="bt" data-a="recadd">Add</button></div>
- ${S.rec.items.map((i,n)=>`<div class="it" style="cursor:default"><div><b>${esc(byId(i.id)?.name||'?')}</b><small>${i.g} g</small></div><button class="x" data-a="recdel" data-d="${n}">✕</button></div>`).join('')}
- ${g?`<div class="pv"><span>Per serving:</span><span><b>${r0(T.k/s)}</b> kcal</span><span>P <b>${r1(T.p/s)}</b></span><span>C <b>${r1(T.c/s)}</b></span><span>F <b>${r1(T.f/s)}</b></span></div>`:''}
+ ${S.rec.items.map((i,n)=><div class="it" style="cursor:default"><div><b>${esc(byId(i.id)?.name||'?')}</b><small>${i.g} g</small></div><button class="x" data-a="recdel" data-d="${n}">✕</button></div>).join('')}
+ ${g?<div class="pv"><span>Per serving:</span><span><b>${r0(T.k/s)}</b> kcal</span><span>P <b>${r1(T.p/s)}</b></span><span>C <b>${r1(T.c/s)}</b></span><span>F <b>${r1(T.f/s)}</b></span></div>:''}
  <div class="err" id="rerr"></div><button class="bt pr" data-a="recsave">Save recipe</button></div>`}
 /* Pantry-to-Plate: coordinate descent finds the grams of each pantry food that best fit the macro target */
 function solve(its,t,av){
  const n=its.length,g=Array(n).fill(0),a=its.map(x=>[x.p/100,x.c/100,x.f/100]),cap=its.map((x,i)=>Math.min(av[i],x.cat===6?30:/powder/i.test(x.name)?60:x.cat<2?300:400));
  for(let it=0;it<300;it++)for(let i=0;i<n;i++){
   const cur=[0,0,0];for(let j=0;j<n;j++)for(let m=0;m<3;m++)cur[m]+=a[j][m]*g[j];
-  const r=[t.p-cur[0],t.c-cur[1],t.f-cur[2]],d=a[i][0]*2+a[i][1]*2+a[i][2]*2;
+  const r=[t.p-cur[0],t.c-cur[1],t.f-cur[2]],d=a[i][0]*2+a[i][1]2+a[i][2]*2;
   if(d<1e-6)continue;
   g[i]=Math.min(cap[i],Math.max(0,g[i]+(a[i][0]*r[0]+a[i][1]*r[1]+a[i][2]*r[2])/d))}
  return g}
@@ -176,34 +179,34 @@ function genHTML(){const G=S.gen;if(!G)return'';
  if(cats.has(1))st.push('Sauté or steam the vegetables until tender.');
  if(cats.has(5))st.push('Heat the beans, lentils or nuts through.');
  st.push('Combine on a plate, season to taste and enjoy.');
- return`<div style="background:var(--s2);border-radius:14px;padding:14px;margin-top:14px"><b>Your recipe</b>${G.rows.map(o=>`<div class="it" style="cursor:default"><div><b>${esc(o.x.name)}</b></div><div class="mc">${o.g} g<small>${r0(mac(o.x,o.g).k)} kcal</small></div></div>`).join('')}
+ return`<div style="background:var(--s2);border-radius:14px;padding:14px;margin-top:14px"><b>Your recipe</b>${G.rows.map(o=><div class="it" style="cursor:default"><div><b>${esc(o.x.name)}</b></div><div class="mc">${o.g} g<small>${r0(mac(o.x,o.g).k)} kcal</small></div></div>).join('')}
  <div class="pv" style="background:var(--sf)"><span><b>${r0(T.k)}</b> kcal</span><span>P <b>${r0(T.p)}</b>/${r0(G.t.p)}</span><span>C <b>${r0(T.c)}</b>/${r0(G.t.c)}</span><span>F <b>${r0(T.f)}</b>/${r0(G.t.f)}</span></div>
- <ol class="mu" style="padding-left:20px;line-height:1.6;font-size:14px">${st.map(s=>`<li>${s}</li>`).join('')}</ol>
- ${G.miss?`<div class="pv" style="background:var(--sf)"><span>To get closer, add <b>${G.miss.g} g ${esc(G.miss.x.name)}</b></span><button class="bt" data-a="addmiss">Add to grocery list</button></div>`:''}
+ <ol class="mu" style="padding-left:20px;line-height:1.6;font-size:14px">${st.map(s=><li>${s}</li>).join('')}</ol>
+ ${G.miss?<div class="pv" style="background:var(--sf)"><span>To get closer, add <b>${G.miss.g} g ${esc(G.miss.x.name)}</b></span><button class="bt" data-a="addmiss">Add to grocery list</button></div>:''}
  <button class="bt pr" data-a="loggen">Log this meal</button></div>`}
 const cost=o=>Math.round(o.g/1000*(PRICE[o.cat]||20));
-function groHTML(){const tot=groc.reduce((s,o)=>s+cost(o),0),txt='NutriPulse shopping list\n'+groc.map(o=>`• ${o.g} g ${o.name} (≈ Bs ${cost(o)})`).join('\n')+`\nTotal ≈ Bs ${tot}`;
+function groHTML(){const tot=groc.reduce((s,o)=>s+cost(o),0),txt='NutriPulse shopping list\n'+groc.map(o=>• ${o.g} g ${o.name} (≈ Bs ${cost(o)})).join('\n')+\nTotal ≈ Bs ${tot};
  return`<div class="cd"><b>Grocery list</b><small>Prices are rough estimates per kg</small>
  <div class="row" style="margin-top:8px"><label style="margin:0">Food<input id="gn" list="fl"></label><label style="margin:0;max-width:100px">Grams<input id="gq" type="number" inputmode="decimal"></label><button class="bt" data-a="groadd">Add</button></div>
- ${groc.map((o,i)=>`<div class="it" style="cursor:default"><div><b>${esc(o.name)}</b><small>${o.g} g</small></div><div class="mc">≈ Bs ${cost(o)}<button class="x" data-a="grodel" data-d="${i}">✕</button></div></div>`).join('')}
- ${groc.length?`<div class="mh" style="margin-top:8px"><b>Total ≈ Bs ${tot}</b><div><a class="bt" style="text-decoration:none;display:inline-block" href="https://wa.me/?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">WhatsApp</a> <button class="bt" data-a="groclear">Clear</button></div></div>`:'<small style="margin-top:8px">Nothing here yet.</small>'}</div>`}
+ ${groc.map((o,i)=><div class="it" style="cursor:default"><div><b>${esc(o.name)}</b><small>${o.g} g</small></div><div class="mc">≈ Bs ${cost(o)}<button class="x" data-a="grodel" data-d="${i}">✕</button></div></div>).join('')}
+ ${groc.length?<div class="mh" style="margin-top:8px"><b>Total ≈ Bs ${tot}</b><div><a class="bt" style="text-decoration:none;display:inline-block" href="https://wa.me/?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">WhatsApp</a> <button class="bt" data-a="groclear">Clear</button></div></div>:'<small style="margin-top:8px">Nothing here yet.</small>'}</div>`}
 function proView(){
  if(!isPro())return`<h2>NutriPulse Pro</h2><div class="cd"><b>Cook with what you have</b><ul class="mu" style="padding-left:18px;line-height:1.7"><li>Pantry-to-Plate: recipes made from your pantry</li><li>Gram-precise portions that fill your remaining macros</li><li>Smart suggestions on the Today tab</li><li>Grocery list with local price estimates, shareable on WhatsApp</li><li>No ads</li></ul><button class="bt pr" data-a="trial">Start 7-day free trial</button><small style="margin-top:8px">Demo: no payment needed. The trial unlocks Pro on this device.</small></div>
- <div class="cd"><b>Plans</b>${[['Pro, monthly','Bs 25/month'],['Pro, yearly','Bs 199/year'],['Professionals (nutritionists, trainers)','Bs 150/month'],['Gyms and universities','Bs 500/month'],['Brand sponsorship','from Bs 2,000/month']].map(p=>`<div class="mrow" style="padding:8px 0;border-top:1px solid var(--bd)"><span>${p[0]}</span><b>${p[1]}</b></div>`).join('')}<small style="margin-top:8px">Payments (bank QR, wallets, cards) are not connected in this demo.</small></div>`;
+ <div class="cd"><b>Plans</b>${[['Pro, monthly','Bs 25/month'],['Pro, yearly','Bs 199/year'],['Professionals (nutritionists, trainers)','Bs 150/month'],['Gyms and universities','Bs 500/month'],['Brand sponsorship','from Bs 2,000/month']].map(p=><div class="mrow" style="padding:8px 0;border-top:1px solid var(--bd)"><span>${p[0]}</span><b>${p[1]}</b></div>).join('')}<small style="margin-top:8px">Payments (bank QR, wallets, cards) are not connected in this demo.</small></div>`;
  const T=calc(prof),t=totals(S.date),g=S.tgt||{p:Math.max(0,r0(T.p-t.p)),c:Math.max(0,r0(T.c-t.c)),f:Math.max(0,r0(T.f-t.f))},d=Math.ceil((proUntil-Date.now())/864e5);
  return`<div class="top"><h2>Pro</h2><span class="tag pro">${d} day${d===1?'':'s'} left</span></div>
  <div class="cd"><b>Your pantry</b><small>What you have at home</small>
  <div class="row" style="margin-top:8px"><label style="margin:0">Food<input id="pin" list="fl" placeholder="Start typing…"></label><label style="margin:0;max-width:100px">Grams<input id="pig" type="number" inputmode="decimal"></label><button class="bt" data-a="panadd">Add</button></div>
- <div class="chips" style="flex-wrap:wrap">${pantry.map((o,i)=>`<span class="chip">${esc(byId(o.id)?.name||'?')} · ${o.g} g <button class="x" data-a="pandel" data-d="${i}" style="padding:0 0 0 6px">✕</button></span>`).join('')||'<small>Empty. Add a few foods.</small>'}</div></div>
+ <div class="chips" style="flex-wrap:wrap">${pantry.map((o,i)=><span class="chip">${esc(byId(o.id)?.name||'?')} · ${o.g} g <button class="x" data-a="pandel" data-d="${i}" style="padding:0 0 0 6px">✕</button></span>).join('')||'<small>Empty. Add a few foods.</small>'}</div></div>
  <div class="cd"><b>Pantry-to-Plate</b><small>Macro targets for this meal, in grams. Prefilled with what you have left today.</small>
  <div class="two" style="grid-template-columns:repeat(3,1fr)"><label>Protein<input id="tp" type="number" value="${g.p}"></label><label>Carbs<input id="tc" type="number" value="${g.c}"></label><label>Fat<input id="tf" type="number" value="${g.f}"></label></div>
- <label>Log to<select id="gm">${MEALS.map(k=>`<option ${k===S.meal?'selected':''}>${k}</option>`).join('')}</select></label>
+ <label>Log to<select id="gm">${MEALS.map(k=><option ${k===S.meal?'selected':''}>${k}</option>).join('')}</select></label>
  <button class="bt pr" data-a="gen">Generate recipe</button>${genHTML()}</div>${groHTML()}`}
 
 function render(){
  if(!prof){app.innerHTML=profileView(true);return}
  const v=S.tab==='today'?todayView():S.tab==='foods'?foodsView():S.tab==='pro'?proView():profileView(false);
- app.innerHTML=`<datalist id="fl">${allFoods().map(x=>`<option value="${esc(x.name)}">`).join('')}</datalist><div class="wrap">${v}</div><nav>${[['today','Today'],['foods','Foods'],['pro','Pro'],['profile','Profile']].map(t=>`<button class="${S.tab===t[0]?'on':''}" data-a="tab" data-d="${t[0]}">${t[1]}</button>`).join('')}</nav>`;
+ app.innerHTML=<datalist id="fl">${allFoods().map(x=><option value="${esc(x.name)}">).join('')}</datalist><div class="wrap">${v}</div><nav>${[['today','Today'],['foods','Foods'],['pro','Pro'],['profile','Profile']].map(t=><button class="${S.tab===t[0]?'on':''}" data-a="tab" data-d="${t[0]}">${t[1]}</button>).join('')}</nav>;
  if(S.tab==='foods')foodList()}
 function toast(t){const e=document.createElement('div');e.className='toast';e.textContent=t;document.body.appendChild(e);setTimeout(()=>e.remove(),1800)}
 function sheet(id){
@@ -212,14 +215,15 @@ function sheet(id){
  m.innerHTML=`<div class="sh"><div class="mh"><h3>${esc(x.name)}</h3><button class="x" data-a="close">✕</button></div>
  <small>Per 100 g: ${r0(x.k)} kcal · P ${r1(x.p)} g · C ${r1(x.c)} g · F ${r1(x.f)} g</small>
  <div class="two"><label>Amount (g)<input id="g" type="number" inputmode="decimal" min="1" value="${x.sv}"></label><label>Servings<input id="sv" type="number" inputmode="decimal" min="0.25" step="0.25" value="1"></label></div>
- <label>Meal<select id="ml">${MEALS.map(k=>`<option ${k===S.meal?'selected':''}>${k}</option>`).join('')}</select></label>
+ <label>Meal<select id="ml">${MEALS.map(k=><option ${k===S.meal?'selected':''}>${k}</option>).join('')}</select></label>
  <small style="margin-top:6px">Typical serving: ${x.u} ≈ ${x.sv} g</small><div class="pv" id="pv"></div><div class="err" id="gerr"></div>
  <button class="bt pr" data-a="add">Add to ${dayLabel(S.date).toLowerCase()}</button></div>`;
  document.body.appendChild(m);preview()}
 function preview(){
  const m=$('#sheet');if(!m)return;const x=allFoods().find(y=>y.id===m.dataset.food),g=+$('#g').value||0,a=mac(x,g);
- $('#pv').innerHTML=`<span><b>${r0(a.k)}</b> kcal</span><span>P <b>${r1(a.p)}</b> g</span><span>C <b>${r1(a.c)}</b> g</span><span>F <b>${r1(a.f)}</b> g</span>`}
+ $('#pv').innerHTML=<span><b>${r0(a.k)}</b> kcal</span><span>P <b>${r1(a.p)}</b> g</span><span>C <b>${r1(a.c)}</b> g</span><span>F <b>${r1(a.f)}</b> g</span>}
 
+/* ---------- Actions ---------- */
 const A={
  tab(d){S.tab=d;render();scrollTo(0,0)},
  day(d){const n=shift(S.date,+d);if(n<=today){S.date=n;render()}},
