@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -12,7 +13,24 @@ button,input,select{font:inherit}
 button{cursor:pointer;border:0;border-radius:10px;padding:11px 14px;background:var(--green);color:#052111;font-weight:750}
 button.secondary{background:#1b3024;color:var(--text);border:1px solid var(--line)}
 button.danger{background:#42201e;color:#ffb1a9}
-.app{max-width:540px;margin:auto;min-height:100vh;padding-bottom:82px}
+.app{max-width:540px;margin:auto;min-height:100vh;padding-bottom:82px;display:none}
+.app.unlocked{display:block}
+.auth-screen{min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(ellipse at 50% 0%,#173d27 0%,#07100c 58%)}
+.auth-card{width:min(440px,100%);background:#101e17;border:1px solid #294333;border-radius:24px;padding:28px;box-shadow:0 24px 80px #0006}
+.auth-logo{font-size:30px;font-weight:900;letter-spacing:-1px}
+.auth-logo span{color:var(--green)}
+.auth-icon{width:58px;height:58px;border-radius:18px;background:#173b26;display:grid;place-items:center;font-size:28px;margin-bottom:20px;border:1px solid #2d5c3e}
+.auth-heading{font-size:26px;line-height:1.2;margin:20px 0 8px;letter-spacing:-.5px}
+.auth-copy{color:var(--muted);margin:0 0 22px}
+.auth-screen .field{margin-bottom:14px}
+.auth-screen .field label{font-size:12px}
+.auth-screen .field input{padding:13px;background:#0b1811}
+.auth-foot{font-size:11px;color:var(--muted);text-align:center;margin-top:18px}
+.auth-switch{background:transparent;color:var(--green);padding:4px;font-weight:750}
+.auth-divider{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:11px;margin:16px 0}
+.auth-divider:before,.auth-divider:after{content:"";height:1px;background:var(--line);flex:1}
+.auth-error{display:none;color:#ffaaa3;background:#3a201e;border:1px solid #61302b;border-radius:9px;padding:9px 11px;font-size:12px;margin-bottom:12px}
+.auth-error.show{display:block}
 .top{position:sticky;top:0;z-index:5;background:#0a1510ee;backdrop-filter:blur(12px);border-bottom:1px solid var(--line);padding:14px 16px;display:flex;align-items:center;justify-content:space-between}
 .brand{font-weight:850;letter-spacing:.2px;font-size:17px}
 .brand span{color:var(--green)}
@@ -58,6 +76,13 @@ button.danger{background:#42201e;color:#ffb1a9}
 .section-title{font-size:19px;font-weight:850;margin:2px 0 14px}
 .toggle{display:flex;align-items:center;gap:8px}
 .toggle input{accent-color:var(--green)}
+.modal-backdrop{position:fixed;inset:0;background:#000a;z-index:30;display:none;align-items:flex-end;justify-content:center;padding:12px}
+.modal-backdrop.open{display:flex}
+.modal{width:min(540px,100%);background:var(--panel);border:1px solid var(--line);border-radius:20px 20px 14px 14px;padding:18px;box-shadow:0 18px 70px #0008;max-height:88vh;overflow:auto}
+.modal h2{margin:0 0 5px;font-size:19px}
+.modal .field{margin-top:12px}
+.modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.food-tag{font-size:10px;color:var(--green);text-transform:uppercase;letter-spacing:.08em}
 @media(min-width:700px){
 body{padding:24px 0}
 .app{border:1px solid #203529;border-radius:22px;overflow:hidden;min-height:calc(100vh - 48px)}
@@ -67,149 +92,317 @@ body{padding:24px 0}
 </style>
 </head>
 <body>
-<div class="app">
+
+<!-- START / SIGN-IN SCREEN -->
+<section class="auth-screen" id="authScreen">
+  <div class="auth-card">
+    <div class="auth-icon">✦</div>
+    <div class="auth-logo">Nutri<span>Pulse</span></div>
+    <h1 class="auth-heading" id="authHeading">Welcome back.</h1>
+    <p class="auth-copy" id="authCopy">Sign in to pick up where you left off and keep your nutrition journey on track.</p>
+
+    <form id="authForm" onsubmit="handleAuth(event)">
+      <div class="field" id="authNameWrap" style="display:none">
+        <label for="authName">Your name</label>
+        <input id="authName" autocomplete="name" placeholder="e.g. Alex">
+      </div>
+      <div class="field">
+        <label for="authEmail">Email address</label>
+        <input id="authEmail" type="email" autocomplete="email" placeholder="you@example.com" required>
+      </div>
+      <div class="field">
+        <label for="authPassword">Password</label>
+        <input id="authPassword" type="password" autocomplete="current-password" minlength="6" placeholder="At least 6 characters" required>
+      </div>
+      <div class="auth-error" id="authError" role="alert"></div>
+      <button class="full" id="authSubmit" type="submit">Sign in</button>
+    </form>
+
+    <div style="text-align:center;margin-top:16px;font-size:12px" id="authSwitchText">
+      New to NutriPulse?
+      <button class="auth-switch" type="button" onclick="toggleAuthMode()">Create an account</button>
+    </div>
+    <div class="auth-divider">OR</div>
+    <button class="secondary full" type="button" onclick="continueAsGuest()">Continue as guest</button>
+    <p class="auth-foot">Demo version · Your sign-in details stay in this browser and are not sent to a server.</p>
+  </div>
+</section>
+
+<!-- MAIN APP -->
+<div class="app" id="mainApp">
 <header class="top">
-<div>
-<div class="brand">Nutri<span>Pulse</span></div>
-<div class="sub">Macro tracker · Eat with intention</div>
-</div>
-<label class="toggle tiny"><input id="darkToggle" type="checkbox" checked> Dark</label>
+  <div>
+    <div class="brand">Nutri<span>Pulse</span></div>
+    <div class="sub">Macro tracker · Eat with intention</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <label class="toggle tiny"><input id="darkToggle" type="checkbox" checked> Dark</label>
+    <button class="secondary" style="padding:7px 9px;font-size:11px" onclick="signOut()">Sign out</button>
+  </div>
 </header>
 
 <main>
 <section class="page active" id="today">
-<div class="row">
-<div>
-<div class="section-title">Today</div>
-<div class="muted" id="todayDate"></div>
-</div>
-<button class="secondary" onclick="resetDay()">Reset day</button>
-</div>
+  <div class="row">
+    <div><div class="section-title">Today</div><div class="muted" id="todayDate"></div></div>
+    <button class="secondary" onclick="resetDay()">Reset day</button>
+  </div>
 
-<div class="card calories">
-<div style="flex:1">
-<div class="muted">Calories remaining</div>
-<h2 id="remaining" style="font-size:26px;margin:4px 0">2,040</h2>
-<div class="tiny"><span id="eaten">0</span> eaten · Goal <span id="goalCal">2040</span></div>
-<div class="progress"><i id="calProgress"></i></div>
-</div>
-<div class="calorie-ring" id="calRing">
-<div><b id="ringNum">0%</b><span class="tiny">of goal</span></div>
-</div>
-</div>
+  <div class="card calories">
+    <div style="flex:1">
+      <div class="muted">Calories remaining</div>
+      <h2 id="remaining" style="font-size:26px;margin:4px 0">2,040</h2>
+      <div class="tiny"><span id="eaten">0</span> eaten · Goal <span id="goalCal">2040</span></div>
+      <div class="progress"><i id="calProgress"></i></div>
+    </div>
+    <div class="calorie-ring" id="calRing"><div><b id="ringNum">0%</b><span class="tiny">of goal</span></div></div>
+  </div>
 
-<div class="card">
-<h3>Macros</h3>
-<div class="stats">
-<div class="stat"><strong id="proteinVal">0 / 81g</strong><span>Protein</span><div class="progress"><i id="proteinBar"></i></div></div>
-<div class="stat"><strong id="carbsVal">0 / 301g</strong><span>Carbs</span><div class="progress"><i id="carbsBar"></i></div></div>
-<div class="stat"><strong id="fatVal">0 / 57g</strong><span>Fat</span><div class="progress"><i id="fatBar"></i></div></div>
-</div>
-</div>
+  <div class="card">
+    <h3>Macros</h3>
+    <div class="stats">
+      <div class="stat"><strong id="proteinVal">0 / 81g</strong><span>Protein</span><div class="progress"><i id="proteinBar"></i></div></div>
+      <div class="stat"><strong id="carbsVal">0 / 301g</strong><span>Carbs</span><div class="progress"><i id="carbsBar"></i></div></div>
+      <div class="stat"><strong id="fatVal">0 / 57g</strong><span>Fat</span><div class="progress"><i id="fatBar"></i></div></div>
+    </div>
+  </div>
 
-<div class="card">
-<div class="row"><h3>Water</h3><b id="waterCount">0 / 2000 ml</b></div>
-<div class="progress"><i id="waterBar"></i></div>
-<div class="row" style="margin-top:12px">
-<button class="secondary" onclick="addWater(-250)">− 250 ml</button>
-<button onclick="addWater(250)">+ 250 ml</button>
-</div>
-</div>
+  <div class="card">
+    <div class="row"><h3>Water</h3><b id="waterCount">0 / 2000 ml</b></div>
+    <div class="progress"><i id="waterBar"></i></div>
+    <div class="row" style="margin-top:12px">
+      <button class="secondary" onclick="addWater(-250)">− 250 ml</button>
+      <button onclick="addWater(250)">+ 250 ml</button>
+    </div>
+  </div>
 
-<div class="card">
-<div class="row"><h3>Food diary</h3><button class="secondary" onclick="go('foods')">+ Add food</button></div>
-<div id="diary"><div class="empty">Nothing logged yet. Add a food to get started.</div></div>
-</div>
-
-<div class="notice" id="tip">Small steps add up. Log meals as you go to see your daily progress.</div>
+  <div class="card">
+    <div class="row"><h3>Food diary</h3><button class="secondary" onclick="go('foods')">+ Add food</button></div>
+    <div id="diary"><div class="empty">Nothing logged yet. Add a food to get started.</div></div>
+  </div>
+  <div class="notice" id="tip">Small steps add up. Log meals as you go to see your daily progress.</div>
 </section>
 
 <section class="page" id="foods">
-<div class="section-title">Food database</div>
-<div class="row">
-<input id="foodSearch" class="search" placeholder="Search foods (e.g. banana, chicken)" oninput="renderFoods()" style="flex:1">
-<button onclick="document.getElementById('customName').focus()">Create</button>
-</div>
-<div class="chips" id="categoryChips"></div>
-<div class="card" id="foodList"></div>
+  <div class="section-title">Food database</div>
+  <p class="muted" style="margin-top:-8px">Search foods, choose a serving, then add it to your diary.</p>
+  <div class="row">
+    <input id="foodSearch" class="search" placeholder="Search foods (e.g. banana, chicken)" oninput="renderFoods()" style="flex:1">
+    <button onclick="document.getElementById('customName').focus()">Create</button>
+  </div>
+  <div class="chips" id="categoryChips"></div>
+  <div class="card" id="foodList"></div>
 
-<div class="card">
-<h3>Create a custom food</h3>
-<div class="field"><label>Name</label><input id="customName" placeholder="e.g. Homemade granola"></div>
-<div class="grid">
-<div class="field"><label>Calories</label><input id="customCal" type="number" min="0" placeholder="kcal"></div>
-<div class="field"><label>Protein (g)</label><input id="customProtein" type="number" min="0" placeholder="0"></div>
-<div class="field"><label>Carbs (g)</label><input id="customCarbs" type="number" min="0" placeholder="0"></div>
-<div class="field"><label>Fat (g)</label><input id="customFat" type="number" min="0" placeholder="0"></div>
-</div>
-<button class="full" onclick="saveCustom()">Save custom food</button>
-</div>
+  <div class="card">
+    <h3>Create a custom food</h3>
+    <div class="field"><label>Name</label><input id="customName" placeholder="e.g. Homemade granola"></div>
+    <div class="grid">
+      <div class="field"><label>Calories</label><input id="customCal" type="number" min="0" placeholder="kcal"></div>
+      <div class="field"><label>Protein (g)</label><input id="customProtein" type="number" min="0" placeholder="0"></div>
+      <div class="field"><label>Carbs (g)</label><input id="customCarbs" type="number" min="0" placeholder="0"></div>
+      <div class="field"><label>Fat (g)</label><input id="customFat" type="number" min="0" placeholder="0"></div>
+    </div>
+    <button class="full" onclick="saveCustom()">Save custom food</button>
+  </div>
 </section>
 
 <section class="page" id="pro">
-<div class="section-title">NutriPulse Pro</div>
-<div class="card">
-<div class="sub">YOUR PERSONAL FOOD ASSISTANT</div>
-<h2 style="font-size:22px;margin-top:7px">Eat well. Waste less.</h2>
-<p class="muted">Plan meals around what you already have, make progress toward your nutrition goals, and spend less time deciding what to eat.</p>
-<ul class="muted" style="padding-left:20px;line-height:1.9">
-<li>Meal ideas based on your pantry</li>
-<li>Personalized macro-aware recipes</li>
-<li>Grocery planning and food suggestions</li>
-<li>Ad-free experience</li>
-</ul>
-<button class="full" onclick="startTrial()">Start 7-day free trial</button>
-<p class="tiny">No payment needed for this demo. Trial status is saved on this device.</p>
-<div id="trialStatus"></div>
-</div>
-
-<div class="card">
-<h3>Plans</h3>
-<div class="food"><div><b>Pro, monthly</b><small>For individuals</small></div><b>Bs 25/month</b></div>
-<div class="food"><div><b>Pro, yearly</b><small>7-day free trial</small></div><b>Bs 199/year</b></div>
-<div class="food"><div><b>Professionals</b><small>Nutritionists and trainers · up to 15 clients</small></div><b>Bs 150/month</b></div>
-<div class="food"><div><b>Gyms and universities</b><small>Institutional licence</small></div><b>Bs 500/month</b></div>
-<div class="food"><div><b>Local sponsorships</b><small>Food brands and businesses</small></div><b>From Bs 2,000/month</b></div>
-</div>
+  <div class="section-title">NutriPulse Pro</div>
+  <div class="card">
+    <div class="sub">YOUR PERSONAL FOOD ASSISTANT</div>
+    <h2 style="font-size:22px;margin-top:7px">Eat well. Waste less.</h2>
+    <p class="muted">Plan meals around what you already have, make progress toward your nutrition goals, and spend less time deciding what to eat.</p>
+    <ul class="muted" style="padding-left:20px;line-height:1.9">
+      <li>Meal ideas based on your pantry</li>
+      <li>Personalized macro-aware recipes</li>
+      <li>Grocery planning and food suggestions</li>
+      <li>Ad-free experience</li>
+    </ul>
+    <button class="full" onclick="startTrial()">Start 7-day free trial</button>
+    <p class="tiny">No payment needed for this demo. Trial status is saved on this device.</p>
+    <div id="trialStatus"></div>
+  </div>
+  <div class="card">
+    <h3>Plans</h3>
+    <div class="food"><div><b>Pro, monthly</b><small>For individuals</small></div><b>Bs 25/month</b></div>
+    <div class="food"><div><b>Pro, yearly</b><small>7-day free trial</small></div><b>Bs 199/year</b></div>
+    <div class="food"><div><b>Professionals</b><small>Nutritionists and trainers · up to 15 clients</small></div><b>Bs 150/month</b></div>
+    <div class="food"><div><b>Gyms and universities</b><small>Institutional licence</small></div><b>Bs 500/month</b></div>
+    <div class="food"><div><b>Local sponsorships</b><small>Food brands and businesses</small></div><b>From Bs 2,000/month</b></div>
+  </div>
 </section>
 
 <section class="page" id="profile">
-<div class="section-title">Profile</div>
-<div class="card">
-<div class="grid">
-<div class="field"><label>Name</label><input id="name" placeholder="Your name"></div>
-<div class="field"><label>Age</label><input id="age" type="number" min="13" max="100" value="18"></div>
-<div class="field"><label>Sex (for formula)</label><select id="sex"><option value="female">Female</option><option value="male">Male</option><option value="other">Prefer not to say</option></select></div>
-<div class="field"><label>Height (cm)</label><input id="height" type="number" value="168"></div>
-<div class="field"><label>Weight (kg)</label><input id="weight" type="number" value="65"></div>
-<div class="field"><label>Activity level</label><select id="activity"><option value="1.2">Sedentary</option><option value="1.375">Light (1–3 days/week)</option><option value="1.55" selected>Moderate (3–5 days/week)</option><option value="1.725">Very active</option><option value="1.9">Athlete / highly active</option></select></div>
-<div class="field" style="grid-column:1/-1"><label>Goal</label><select id="goal"><option value="maintain">Maintain weight</option><option value="gain" selected>Build muscle</option><option value="lose">General fat-loss goal</option></select></div>
-</div>
-<button class="full" onclick="saveProfile()">Save and recalculate</button>
-</div>
-
-<div class="card">
-<h3>Your daily targets</h3>
-<div class="stats">
-<div class="stat"><strong id="profileCal">2040</strong><span>Calories</span></div>
-<div class="stat"><strong id="profileP">81 g</strong><span>Protein</span></div>
-<div class="stat"><strong id="profileC">301 g</strong><span>Carbs</span></div>
-</div>
-<p class="tiny">Estimates only, not medical advice. Individual needs vary. If you are still growing, avoid restrictive targets and consult a qualified health professional for personalized advice.</p>
-</div>
-<button class="danger full" onclick="clearAll()">Erase all my data</button>
+  <div class="section-title">Profile</div>
+  <div class="card">
+    <div class="grid">
+      <div class="field"><label>Name</label><input id="name" placeholder="Your name"></div>
+      <div class="field"><label>Age</label><input id="age" type="number" min="13" max="100" value="18"></div>
+      <div class="field">
+        <label>Sex (for formula)</label>
+        <select id="sex"><option value="female">Female</option><option value="male">Male</option><option value="other">Prefer not to say</option></select>
+      </div>
+      <div class="field"><label>Height (cm)</label><input id="height" type="number" value="168"></div>
+      <div class="field"><label>Weight (kg)</label><input id="weight" type="number" value="65"></div>
+      <div class="field">
+        <label>Activity level</label>
+        <select id="activity">
+          <option value="1.2">Sedentary</option>
+          <option value="1.375">Light (1–3 days/week)</option>
+          <option value="1.55" selected>Moderate (3–5 days/week)</option>
+          <option value="1.725">Very active</option>
+          <option value="1.9">Athlete / highly active</option>
+        </select>
+      </div>
+      <div class="field" style="grid-column:1/-1">
+        <label>Goal</label>
+        <select id="goal"><option value="maintain">Maintain weight</option><option value="gain" selected>Build muscle</option><option value="lose">General fat-loss goal</option></select>
+      </div>
+    </div>
+    <button class="full" onclick="saveProfile()">Save and recalculate</button>
+  </div>
+  <div class="card">
+    <h3>Your daily targets</h3>
+    <div class="stats">
+      <div class="stat"><strong id="profileCal">2040</strong><span>Calories</span></div>
+      <div class="stat"><strong id="profileP">81 g</strong><span>Protein</span></div>
+      <div class="stat"><strong id="profileC">301 g</strong><span>Carbs</span></div>
+    </div>
+    <p class="tiny">Estimates only, not medical advice. Individual needs vary. If you are still growing, avoid restrictive targets and consult a qualified health professional for personalized advice.</p>
+  </div>
+  <button class="danger full" onclick="clearAll()">Erase all my data</button>
 </section>
 </main>
 
+<!-- FOOD DETAILS MODAL -->
+<div class="modal-backdrop" id="foodModal" onclick="if(event.target===this)closeFoodModal()">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalFoodName">
+    <div class="row">
+      <div>
+        <div class="food-tag">Food details</div>
+        <h2 id="modalFoodName">Food</h2>
+        <div class="tiny" id="modalFoodMacros"></div>
+      </div>
+      <button class="secondary" onclick="closeFoodModal()" aria-label="Close">✕</button>
+    </div>
+    <div class="grid">
+      <div class="field"><label>Servings</label><input id="modalAmount" type="number" min="0.1" step="0.1" value="1"></div>
+      <div class="field"><label>Serving size</label><input id="modalServing" readonly></div>
+    </div>
+    <div class="field">
+      <label>Meal</label>
+      <select id="modalMeal"><option>Breakfast</option><option>Lunch</option><option>Dinner</option><option>Snacks</option></select>
+    </div>
+    <div class="card" style="margin:8px 0;background:var(--panel2)">
+      <div class="row"><span class="muted">Calories</span><strong id="modalCalories">0 kcal</strong></div>
+      <div class="row"><span class="muted">Protein · Carbs · Fat</span><strong id="modalMacroTotals">0g · 0g · 0g</strong></div>
+    </div>
+    <div class="modal-actions">
+      <button class="secondary" onclick="closeFoodModal()">Cancel</button>
+      <button onclick="confirmAddFood()">Add to today</button>
+    </div>
+  </div>
+</div>
+
 <nav class="tabs">
-<button class="tab active" data-page="today" onclick="go('today')"><span>◷</span>Today</button>
-<button class="tab" data-page="foods" onclick="go('foods')"><span>⌕</span>Foods</button>
-<button class="tab" data-page="pro" onclick="go('pro')"><span>✦</span>Pro</button>
-<button class="tab" data-page="profile" onclick="go('profile')"><span>◉</span>Profile</button>
+  <button class="tab active" data-page="today" onclick="go('today')"><span>◷</span>Today</button>
+  <button class="tab" data-page="foods" onclick="go('foods')"><span>⌕</span>Foods</button>
+  <button class="tab" data-page="pro" onclick="go('pro')"><span>✦</span>Pro</button>
+  <button class="tab" data-page="profile" onclick="go('profile')"><span>◉</span>Profile</button>
 </nav>
 </div>
 
 <script>
+// SIGN-IN / ACCOUNT DEMO
+let authMode='signin';
+
+function toggleAuthMode(){
+  authMode=authMode==='signin'?'signup':'signin';
+  document.getElementById('authHeading').textContent=authMode==='signin'?'Welcome back.':'Create your account.';
+  document.getElementById('authCopy').textContent=authMode==='signin'
+    ?'Sign in to pick up where you left off and keep your nutrition journey on track.'
+    :'Start building better food habits with your personal nutrition dashboard.';
+  document.getElementById('authNameWrap').style.display=authMode==='signup'?'block':'none';
+  document.getElementById('authPassword').autocomplete=authMode==='signin'?'current-password':'new-password';
+  document.getElementById('authSubmit').textContent=authMode==='signin'?'Sign in':'Create account';
+  document.getElementById('authSwitchText').innerHTML=authMode==='signin'
+    ?'New to NutriPulse? <button class="auth-switch" type="button" onclick="toggleAuthMode()">Create an account</button>'
+    :'Already have an account? <button class="auth-switch" type="button" onclick="toggleAuthMode()">Sign in</button>';
+  document.getElementById('authError').classList.remove('show');
+}
+
+function authError(message){
+  let el=document.getElementById('authError');
+  el.textContent=message;
+  el.classList.add('show');
+}
+
+function unlockApp(user){
+  localStorage.setItem('np_session',JSON.stringify(user));
+  document.getElementById('authScreen').style.display='none';
+  document.getElementById('mainApp').classList.add('unlocked');
+  if(user.name&&!document.getElementById('name').value){
+    document.getElementById('name').value=user.name;
+  }
+  render();
+  renderFoods();
+}
+
+function handleAuth(event){
+  event.preventDefault();
+  const email=document.getElementById('authEmail').value.trim().toLowerCase();
+  const password=document.getElementById('authPassword').value;
+  const name=document.getElementById('authName').value.trim();
+  let users={};
+
+  try{
+    users=JSON.parse(localStorage.getItem('np_demo_users')||'{}');
+  }catch(e){}
+
+  if(authMode==='signup'){
+    if(!name){
+      authError('Please enter your name.');
+      return;
+    }
+    if(users[email]){
+      authError('An account with this email already exists. Please sign in.');
+      return;
+    }
+    users[email]={email,name,password};
+    localStorage.setItem('np_demo_users',JSON.stringify(users));
+    unlockApp({email,name});
+  }else{
+    if(users[email]&&users[email].password!==password){
+      authError('That password does not match this demo account. Please try again.');
+      return;
+    }
+    if(users[email]){
+      unlockApp({email,name:users[email].name});
+    }else{
+      authError('No demo account found for this email. Choose “Create an account” first, or continue as guest.');
+    }
+  }
+}
+
+function continueAsGuest(){
+  unlockApp({email:'',name:''});
+}
+
+function signOut(){
+  localStorage.removeItem('np_session');
+  document.getElementById('mainApp').classList.remove('unlocked');
+  document.getElementById('authScreen').style.display='grid';
+  document.getElementById('authForm').reset();
+  authMode='signin';
+  document.getElementById('authNameWrap').style.display='none';
+  document.getElementById('authHeading').textContent='Welcome back.';
+  document.getElementById('authCopy').textContent='Sign in to pick up where you left off and keep your nutrition journey on track.';
+  document.getElementById('authSubmit').textContent='Sign in';
+  document.getElementById('authSwitchText').innerHTML='New to NutriPulse? <button class="auth-switch" type="button" onclick="toggleAuthMode()">Create an account</button>';
+  document.getElementById('authError').classList.remove('show');
+}
+
+// FOOD DATABASE
 const baseFoods=[
 {name:"Almonds",category:"Nuts & seeds",serving:"100 g",cal:579,p:21.2,c:21.6,f:49.9},
 {name:"Apple",category:"Fruits",serving:"100 g",cal:52,p:.3,c:13.8,f:.2},
@@ -239,230 +432,275 @@ let water=Number(localStorage.getItem('np_water')||0);
 let targets={cal:2040,p:81,c:301,f:57};
 let category='All';
 let meal='Breakfast';
-
 const categories=['All','Fruits','Vegetables','Protein','Carbs','Dairy & eggs','Nuts & seeds','Bolivian dishes','My foods'];
 
 function go(id){
-document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));
-document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.page===id));
-window.scrollTo({top:0,behavior:'smooth'});
-if(id==='foods')renderFoods();
+  document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.page===id));
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(id==='foods')renderFoods();
 }
 
 function save(){
-localStorage.setItem('np_log',JSON.stringify(log));
-localStorage.setItem('np_water',water);
-localStorage.setItem('np_custom_foods',JSON.stringify(customFoods));
+  localStorage.setItem('np_log',JSON.stringify(log));
+  localStorage.setItem('np_water',water);
+  localStorage.setItem('np_custom_foods',JSON.stringify(customFoods));
 }
 
 function num(v){return Math.max(0,Number(v)||0)}
-
-function render(){
-let sums=log.reduce((a,x)=>({
-cal:a.cal+x.cal,p:a.p+x.p,c:a.c+x.c,f:a.f+x.f
-}),{cal:0,p:0,c:0,f:0});
-
-document.getElementById('eaten').textContent=Math.round(sums.cal);
-document.getElementById('remaining').textContent=Math.round(targets.cal-sums.cal).toLocaleString();
-document.getElementById('goalCal').textContent=targets.cal;
-
-let pct=Math.min(100,sums.cal/targets.cal*100);
-document.getElementById('calProgress').style.width=pct+'%';
-document.getElementById('ringNum').textContent=Math.round(pct)+'%';
-document.getElementById('calRing').style.setProperty('--progress',pct+'%');
-
-[['protein',sums.p,targets.p,'proteinVal','proteinBar'],
-['carbs',sums.c,targets.c,'carbsVal','carbsBar'],
-['fat',sums.f,targets.f,'fatVal','fatBar']].forEach(([n,v,t,id,bar])=>{
-document.getElementById(id).textContent=Math.round(v)+' / '+t+'g';
-document.getElementById(bar).style.width=Math.min(100,v/t*100)+'%';
-});
-
-document.getElementById('waterCount').textContent=water+' / 2000 ml';
-document.getElementById('waterBar').style.width=Math.min(100,water/20)+'%';
-
-document.getElementById('diary').innerHTML=log.length?
-['Breakfast','Lunch','Dinner','Snacks'].map(m=>{
-let items=log.map((x,i)=>({...x,i})).filter(x=>x.meal===m);
-return items.length?
-`<div style="padding-top:10px"><div class="tiny" style="font-weight:800;color:var(--green)">${m.toUpperCase()}</div>
-${items.map(x=>`<div class="food"><div><b>${esc(x.name)}</b>
-<small>${x.amount} serving(s) · P ${round(x.p)}g · C ${round(x.c)}g · F ${round(x.f)}g</small></div>
-<div class="cal"><b>${Math.round(x.cal)} kcal</b>
-<button class="secondary" style="padding:4px 8px;margin-top:5px" onclick="removeFood(${x.i})">×</button></div></div>`).join('')}</div>`:''
-}).join(''):
-'<div class="empty">Nothing logged yet. Add a food to get started.</div>';
-
-document.getElementById('profileCal').textContent=targets.cal;
-document.getElementById('profileP').textContent=targets.p+' g';
-document.getElementById('profileC').textContent=targets.c+' g';
-}
-
 function round(n){return Math.round(n*10)/10}
 
 function esc(s){
-return String(s).replace(/[&<>"']/g,c=>({
-'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
-}[c]));
+  return String(s).replace(/[&<>"']/g,c=>({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
 }
+
+function render(){
+  let sums=log.reduce((a,x)=>({
+    cal:a.cal+x.cal,p:a.p+x.p,c:a.c+x.c,f:a.f+x.f
+  }),{cal:0,p:0,c:0,f:0});
+
+  document.getElementById('eaten').textContent=Math.round(sums.cal);
+  document.getElementById('remaining').textContent=Math.round(targets.cal-sums.cal).toLocaleString();
+  document.getElementById('goalCal').textContent=targets.cal;
+
+  let pct=Math.min(100,sums.cal/targets.cal*100);
+  document.getElementById('calProgress').style.width=pct+'%';
+  document.getElementById('ringNum').textContent=Math.round(pct)+'%';
+  document.getElementById('calRing').style.setProperty('--progress',pct+'%');
+
+  [
+    ['protein',sums.p,targets.p,'proteinVal','proteinBar'],
+    ['carbs',sums.c,targets.c,'carbsVal','carbsBar'],
+    ['fat',sums.f,targets.f,'fatVal','fatBar']
+  ].forEach(([n,v,t,id,bar])=>{
+    document.getElementById(id).textContent=Math.round(v)+' / '+t+'g';
+    document.getElementById(bar).style.width=Math.min(100,v/t*100)+'%';
+  });
+
+  document.getElementById('waterCount').textContent=water+' / 2000 ml';
+  document.getElementById('waterBar').style.width=Math.min(100,water/20)+'%';
+
+  document.getElementById('diary').innerHTML=log.length
+    ?['Breakfast','Lunch','Dinner','Snacks'].map(m=>{
+      let items=log.map((x,i)=>({...x,i})).filter(x=>x.meal===m);
+      return items.length
+        ?`<div style="padding-top:10px"><div class="tiny" style="font-weight:800;color:var(--green)">${m.toUpperCase()}</div>${items.map(x=>`<div class="food"><div><b>${esc(x.name)}</b><small>${x.amount} serving(s) · P ${round(x.p)}g · C ${round(x.c)}g · F ${round(x.f)}g</small></div><div class="cal"><b>${Math.round(x.cal)} kcal</b><button class="secondary" style="padding:4px 8px;margin-top:5px" onclick="removeFood(${x.i})">×</button></div></div>`).join('')}</div>`
+        :'';
+    }).join('')
+    :'<div class="empty">Nothing logged yet. Add a food to get started.</div>';
+
+  document.getElementById('profileCal').textContent=targets.cal;
+  document.getElementById('profileP').textContent=targets.p+' g';
+  document.getElementById('profileC').textContent=targets.c+' g';
+}
+
+let pendingFood=null;
 
 function addFood(idx){
-let all=[...baseFoods,...customFoods.map(f=>({...f,category:'My foods'}))];
-let f=all[idx];
-if(!f)return;
+  let all=[...baseFoods,...customFoods.map(f=>({...f,category:'My foods'}))];
+  pendingFood=all[idx];
+  if(!pendingFood)return;
 
-let amount=Number(prompt('How many servings? (1 = '+f.serving+')','1'));
-if(!amount||amount<=0)return;
-
-log.push({
-name:f.name,meal,amount,
-cal:f.cal*amount,p:f.p*amount,c:f.c*amount,f:f.f*amount
-});
-save();
-render();
-go('today');
+  document.getElementById('modalFoodName').textContent=pendingFood.name;
+  document.getElementById('modalFoodMacros').textContent=`Per ${pendingFood.serving} · P ${pendingFood.p}g · C ${pendingFood.c}g · F ${pendingFood.f}g`;
+  document.getElementById('modalServing').value=pendingFood.serving;
+  document.getElementById('modalAmount').value=1;
+  document.getElementById('modalMeal').value='Breakfast';
+  updateModalTotals();
+  document.getElementById('foodModal').classList.add('open');
 }
 
+function closeFoodModal(){
+  document.getElementById('foodModal').classList.remove('open');
+  pendingFood=null;
+}
+
+function updateModalTotals(){
+  if(!pendingFood)return;
+  let amount=Math.max(.1,Number(document.getElementById('modalAmount').value)||1);
+  document.getElementById('modalCalories').textContent=Math.round(pendingFood.cal*amount)+' kcal';
+  document.getElementById('modalMacroTotals').textContent=`${round(pendingFood.p*amount)}g · ${round(pendingFood.c*amount)}g · ${round(pendingFood.f*amount)}g`;
+}
+
+function confirmAddFood(){
+  if(!pendingFood)return;
+  let amount=Math.max(.1,Number(document.getElementById('modalAmount').value)||1);
+  let selectedMeal=document.getElementById('modalMeal').value;
+  log.push({
+    name:pendingFood.name,meal:selectedMeal,amount,
+    cal:pendingFood.cal*amount,p:pendingFood.p*amount,
+    c:pendingFood.c*amount,f:pendingFood.f*amount
+  });
+  save();
+  render();
+  closeFoodModal();
+  go('today');
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('modalAmount').addEventListener('input',updateModalTotals);
+});
+
 function removeFood(i){
-log.splice(i,1);
-save();
-render();
+  log.splice(i,1);
+  save();
+  render();
 }
 
 function addWater(n){
-water=Math.max(0,water+n);
-save();
-render();
+  water=Math.max(0,water+n);
+  save();
+  render();
 }
 
 function resetDay(){
-if(confirm('Clear today’s food diary and water count?')){
-log=[];
-water=0;
-save();
-render();
-}
+  if(confirm('Clear today’s food diary and water count?')){
+    log=[];
+    water=0;
+    save();
+    render();
+  }
 }
 
 function renderFoods(){
-let search=(document.getElementById('foodSearch').value||'').toLowerCase();
+  let search=(document.getElementById('foodSearch').value||'').toLowerCase();
 
-document.getElementById('categoryChips').innerHTML=categories.map(c=>
-`<button class="chip ${category===c?'active':''}" onclick="category='${c}';renderFoods()">${c}</button>`
-).join('');
+  document.getElementById('categoryChips').innerHTML=categories.map(c=>
+    `<button class="chip ${category===c?'active':''}" onclick="category='${c}';renderFoods()">${c}</button>`
+  ).join('');
 
-let all=[...baseFoods,...customFoods.map(f=>({...f,category:'My foods'}))]
-.map((f,i)=>({...f,idx:i}))
-.filter(f=>(category==='All'||f.category===category)&&f.name.toLowerCase().includes(search));
+  let all=[...baseFoods,...customFoods.map(f=>({...f,category:'My foods'}))]
+    .map((f,i)=>({...f,idx:i}))
+    .filter(f=>(category==='All'||f.category===category)&&f.name.toLowerCase().includes(search));
 
-document.getElementById('foodList').innerHTML=all.length?
-all.map(f=>`<div class="food"><div><b>${esc(f.name)}</b>
-<small>${esc(f.serving)} · P ${f.p}g · C ${f.c}g · F ${f.f}g</small></div>
-<div class="cal"><b>${f.cal} kcal</b>
-<button style="padding:7px 10px;margin-top:5px" onclick="addFood(${f.idx})">+ Add</button></div></div>`).join(''):
-'<div class="empty">No foods found. Create a custom food below.</div>';
+  document.getElementById('foodList').innerHTML=all.length
+    ?all.map(f=>`<div class="food"><div><b>${esc(f.name)}</b><small>${esc(f.serving)} · P ${f.p}g · C ${f.c}g · F ${f.f}g</small></div><div class="cal"><b>${f.cal} kcal</b><button style="padding:7px 10px;margin-top:5px" onclick="addFood(${f.idx})">+ Add</button></div></div>`).join('')
+    :'<div class="empty">No foods found. Create a custom food below.</div>';
 }
 
 function saveCustom(){
-let name=document.getElementById('customName').value.trim();
-if(!name){alert('Enter a food name first.');return}
+  let name=document.getElementById('customName').value.trim();
+  if(!name){alert('Enter a food name first.');return;}
 
-customFoods.push({
-name,serving:'100 g',
-cal:num(document.getElementById('customCal').value),
-p:num(document.getElementById('customProtein').value),
-c:num(document.getElementById('customCarbs').value),
-f:num(document.getElementById('customFat').value)
-});
+  customFoods.push({
+    name,serving:'100 g',
+    cal:num(document.getElementById('customCal').value),
+    p:num(document.getElementById('customProtein').value),
+    c:num(document.getElementById('customCarbs').value),
+    f:num(document.getElementById('customFat').value)
+  });
 
-save();
-['customName','customCal','customProtein','customCarbs','customFat'].forEach(id=>document.getElementById(id).value='');
-category='My foods';
-renderFoods();
-alert('Custom food saved.');
+  save();
+  ['customName','customCal','customProtein','customCarbs','customFat'].forEach(id=>{
+    document.getElementById(id).value='';
+  });
+  category='My foods';
+  renderFoods();
+  alert('Custom food saved.');
 }
 
 function saveProfile(){
-let age=num(document.getElementById('age').value);
-let h=num(document.getElementById('height').value);
-let w=num(document.getElementById('weight').value);
+  let age=num(document.getElementById('age').value);
+  let h=num(document.getElementById('height').value);
+  let w=num(document.getElementById('weight').value);
 
-if(!age||!h||!w){alert('Please enter your age, height and weight.');return}
+  if(!age||!h||!w){
+    alert('Please enter your age, height and weight.');
+    return;
+  }
 
-let sex=document.getElementById('sex').value;
-let activity=num(document.getElementById('activity').value);
-let goal=document.getElementById('goal').value;
+  let sex=document.getElementById('sex').value;
+  let activity=num(document.getElementById('activity').value);
+  let goal=document.getElementById('goal').value;
 
-let bmr=10*w+6.25*h-5*age+(sex==='male'?5:sex==='female'?-161:-78);
-let maintenance=Math.round(bmr*activity);
+  let bmr=10*w+6.25*h-5*age+(sex==='male'?5:sex==='female'?-161:-78);
+  let maintenance=Math.round(bmr*activity);
 
-targets.cal=Math.max(1200,Math.round(maintenance*(goal==='gain'?1.08:goal==='lose'?.95:1)));
-targets.p=Math.round(w*(goal==='gain'?1.5:1.2));
-targets.f=Math.round(targets.cal*.27/9);
-targets.c=Math.max(0,Math.round((targets.cal-targets.p*4-targets.f*9)/4));
+  targets.cal=Math.max(1200,Math.round(maintenance*(goal==='gain'?1.08:goal==='lose'?.95:1)));
+  targets.p=Math.round(w*(goal==='gain'?1.5:1.2));
+  targets.f=Math.round(targets.cal*.27/9);
+  targets.c=Math.max(0,Math.round((targets.cal-targets.p*4-targets.f*9)/4));
 
-localStorage.setItem('np_profile',JSON.stringify({
-name:document.getElementById('name').value,age,h,w,sex,activity,goal
-}));
+  localStorage.setItem('np_profile',JSON.stringify({
+    name:document.getElementById('name').value,age,h,w,sex,activity,goal
+  }));
 
-render();
-alert('Profile and estimated targets updated.');
+  render();
+  alert('Profile and estimated targets updated.');
 }
 
 function startTrial(){
-localStorage.setItem('np_pro_trial','true');
-document.getElementById('trialStatus').innerHTML='<div class="notice">Your 7-day demo trial is active on this device.</div>';
-document.querySelector('[data-page="pro"]').textContent='✦ Pro';
+  localStorage.setItem('np_pro_trial','true');
+  document.getElementById('trialStatus').innerHTML='<div class="notice">Your 7-day demo trial is active on this device.</div>';
 }
 
 function clearAll(){
-if(confirm('Erase your saved profile, food diary, custom foods and water count from this browser?')){
-['np_log','np_water','np_custom_foods','np_profile','np_pro_trial'].forEach(k=>localStorage.removeItem(k));
-log=[];
-water=0;
-customFoods=[];
-targets={cal:2040,p:81,c:301,f:57};
-render();
-}
+  if(confirm('Erase your saved profile, food diary, custom foods and water count from this browser?')){
+    ['np_log','np_water','np_custom_foods','np_profile','np_pro_trial'].forEach(k=>localStorage.removeItem(k));
+    log=[];
+    water=0;
+    customFoods=[];
+    targets={cal:2040,p:81,c:301,f:57};
+    render();
+  }
 }
 
+// INITIALIZE APP
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape')closeFoodModal();
+});
+
 document.getElementById('todayDate').textContent=new Date().toLocaleDateString(undefined,{
-weekday:'short',month:'short',day:'numeric'
+  weekday:'short',month:'short',day:'numeric'
 });
 
 document.getElementById('darkToggle').addEventListener('change',e=>{
-if(!e.target.checked){
-document.documentElement.style.setProperty('--bg','#f3f8f4');
-document.documentElement.style.setProperty('--panel','#ffffff');
-document.documentElement.style.setProperty('--panel2','#e8f3eb');
-document.documentElement.style.setProperty('--text','#13241a');
-document.documentElement.style.setProperty('--muted','#607468');
-document.documentElement.style.setProperty('--line','#d6e5da');
-}else{
-[['--bg','#07100c'],['--panel','#101e17'],['--panel2','#172a20'],
-['--text','#edf7ef'],['--muted','#9bb0a2'],['--line','#263b2e']].forEach(([k,v])=>
-document.documentElement.style.setProperty(k,v));
-}
+  if(!e.target.checked){
+    document.documentElement.style.setProperty('--bg','#f3f8f4');
+    document.documentElement.style.setProperty('--panel','#ffffff');
+    document.documentElement.style.setProperty('--panel2','#e8f3eb');
+    document.documentElement.style.setProperty('--text','#13241a');
+    document.documentElement.style.setProperty('--muted','#607468');
+    document.documentElement.style.setProperty('--line','#d6e5da');
+  }else{
+    document.documentElement.style.setProperty('--bg','#07100c');
+    document.documentElement.style.setProperty('--panel','#101e17');
+    document.documentElement.style.setProperty('--panel2','#172a20');
+    document.documentElement.style.setProperty('--text','#edf7ef');
+    document.documentElement.style.setProperty('--muted','#9bb0a2');
+    document.documentElement.style.setProperty('--line','#263b2e');
+  }
 });
 
+document.getElementById('categoryChips').innerHTML=categories.map(c=>
+  `<button class="chip ${category===c?'active':''}" onclick="category='${c}';renderFoods()">${c}</button>`
+).join('');
+
 if(localStorage.getItem('np_pro_trial')){
-document.getElementById('trialStatus').innerHTML='<div class="notice">Your 7-day demo trial is active on this device.</div>';
+  document.getElementById('trialStatus').innerHTML='<div class="notice">Your 7-day demo trial is active on this device.</div>';
 }
 
 try{
-let p=JSON.parse(localStorage.getItem('np_profile')||'null');
-if(p){
-for(let [k,v] of Object.entries({
-name:p.name,age:p.age,height:p.h,weight:p.w,
-sex:p.sex,activity:p.activity,goal:p.goal
-})){
-if(document.getElementById(k))document.getElementById(k).value=v;
-}
-}
+  let p=JSON.parse(localStorage.getItem('np_profile')||'null');
+  if(p){
+    for(let [k,v] of Object.entries({
+      name:p.name,age:p.age,height:p.h,weight:p.w,
+      sex:p.sex,activity:p.activity,goal:p.goal
+    })){
+      if(document.getElementById(k))document.getElementById(k).value=v;
+    }
+  }
 }catch(e){}
 
 render();
 renderFoods();
+
+try{
+  const session=JSON.parse(localStorage.getItem('np_session')||'null');
+  if(session)unlockApp(session);
+}catch(e){}
 </script>
 </body>
 </html>
