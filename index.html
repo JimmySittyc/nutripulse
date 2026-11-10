@@ -3,56 +3,78 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ece8e0">
 <title>NutriPulse: Macro Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Mrs+Saint+Delafield&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0c1712;--card:#12231b;--field:#183026;--line:#244335;--txt:#eef5f0;--mut:#8fa89a;--acc:#45d96b;--acc2:#0b2a18;--red:#ff6b6b;color-scheme:dark}
-*{box-sizing:border-box;margin:0}
-html,body{background:var(--bg);color:var(--txt);font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-body{max-width:480px;margin:0 auto;padding:16px 14px 100px}
-h1{font-size:24px}h2{font-size:17px}
+/* Palette: paper #ece8e0 · sand #e8d3b5 · dusty blue #8f9bb3 · taupe #7a6a62 · plum #7a4a58 · lamp amber #e9a94b */
+:root{--bg:#ece8e0;--card:rgba(250,247,242,.88);--field:rgba(255,255,255,.6);--line:rgba(122,106,98,.18);--txt:#3a2f2b;--mut:#8a7b73;--acc:#7a4a58;--acc2:#fff;--red:#b5473f;--blue:#8f9bb3;--amber:#e9a94b;color-scheme:light}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+html{background:radial-gradient(70% 38% at 8% 0%,#c3c9d8 0%,transparent 72%),radial-gradient(55% 36% at 100% 28%,#ecd5b3 0%,transparent 72%),radial-gradient(70% 40% at 0% 100%,#dcbfc2 0%,transparent 72%),radial-gradient(50% 30% at 100% 100%,#c6cbd8 0%,transparent 70%),var(--bg);background-attachment:fixed;color:var(--txt);font:15px/1.45 Montserrat,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-weight:400}
+body{max-width:480px;margin:0 auto;padding:calc(18px + env(safe-area-inset-top)) 16px 130px;position:relative}
+/* paper grain */
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:50;opacity:.07;mix-blend-mode:multiply;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+h1{font-size:34px;font-weight:300;letter-spacing:-.02em;line-height:1.1}
+h2{font-size:17px;font-weight:500;letter-spacing:-.005em}
+b{font-weight:600}
 small,.mut{color:var(--mut);font-size:12.5px}
 .view{display:none}.view.on{display:block}
-.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin:12px 0}
-.glow{border-color:var(--acc)}
-label{display:block;font-weight:600;font-size:13px;margin:12px 0 6px}
-input,select{width:100%;background:var(--field);border:1px solid var(--line);border-radius:12px;color:var(--txt);padding:12px;font:inherit}
-input:focus,select:focus{outline:2px solid #2d7ab8;outline-offset:0}
+/* Liquid glass surface */
+.card{background:linear-gradient(150deg,rgba(255,255,255,.66),rgba(255,255,255,.32));-webkit-backdrop-filter:blur(26px) saturate(170%);backdrop-filter:blur(26px) saturate(170%);border:1px solid rgba(255,255,255,.72);border-radius:30px;padding:18px;margin:14px 0;box-shadow:0 12px 32px rgba(90,64,54,.10),inset 0 1.5px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(122,106,98,.10)}
+/* Warm lamp glow, like the lit shelves */
+.glow{background:linear-gradient(150deg,rgba(255,243,219,.82),rgba(255,255,255,.34));border-color:rgba(233,169,75,.55);box-shadow:0 0 0 1px rgba(233,169,75,.35),0 14px 40px rgba(233,169,75,.30),inset 0 1.5px 0 rgba(255,255,255,.95)}
+label{display:block;font-weight:500;font-size:13px;margin:14px 0 6px;color:#5c4d47}
+input,select{width:100%;background:var(--field);border:1px solid rgba(255,255,255,.8);border-radius:18px;color:var(--txt);padding:13px 14px;font:inherit;box-shadow:inset 0 1px 3px rgba(122,106,98,.14)}
+input::placeholder{color:#a99b93}
+input:focus,select:focus{outline:2px solid rgba(143,155,179,.9);outline-offset:1px}
 .row{display:flex;gap:10px}.row>*{flex:1}
-button{font:inherit;cursor:pointer;border:1px solid var(--line);background:var(--field);color:var(--txt);border-radius:12px;padding:10px 14px}
-.btn{background:var(--acc);color:var(--acc2);border:0;font-weight:700;width:100%;padding:13px;border-radius:13px;margin-top:14px}
-.btn.red{background:none;border:1px solid var(--line);color:var(--red)}
-.top{display:flex;justify-content:space-between;align-items:baseline}
-.brand{font-size:22px;font-weight:800}.brand b{color:var(--acc)}
-.nav{display:flex;justify-content:center;align-items:center;gap:18px;margin:14px 0}
-.nav button:disabled{opacity:.35}
-.ring{display:flex;align-items:center;gap:22px}
-.ring svg{width:110px;height:110px;transform:rotate(-90deg)}
-.ring .mid{position:absolute;text-align:center;width:110px}
-.ring .mid b{font-size:26px;display:block}
-.kv{display:flex;justify-content:space-between;gap:30px;margin:4px 0}.kv b{font-size:15px}
-.bar{height:8px;background:var(--field);border-radius:9px;overflow:hidden;margin:5px 0 12px}
-.bar i{display:block;height:100%;background:var(--acc);border-radius:9px;transition:width .3s}
+button{font:inherit;font-weight:500;cursor:pointer;color:var(--txt);border:1px solid rgba(255,255,255,.8);background:linear-gradient(160deg,rgba(255,255,255,.75),rgba(255,255,255,.4));-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-radius:999px;padding:10px 16px;box-shadow:0 4px 12px rgba(90,64,54,.08),inset 0 1px 0 #fff;transition:transform .15s ease}
+button:active{transform:scale(.96)}
+.btn{background:linear-gradient(160deg,#8f5a6a,#6a3f4d);color:var(--acc2);border:0;font-weight:600;width:100%;padding:15px;border-radius:999px;margin-top:16px;box-shadow:0 10px 22px rgba(122,74,88,.35),inset 0 1px 0 rgba(255,255,255,.35)}
+.btn.red{background:rgba(255,255,255,.45);border:1px solid rgba(181,71,63,.35);color:var(--red);box-shadow:none}
+.top{display:flex;justify-content:space-between;align-items:center}
+.brand{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:300;letter-spacing:.16em}
+.brand::before{content:"";width:34px;height:34px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M20 20a2 2 0 0 1 4 0a4 4 0 0 1-8 0a6 6 0 0 1 12 0a8 8 0 0 1-16 0' fill='none' stroke='%237a4a58' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat}
+.brand b{font-family:"Mrs Saint Delafield","Snell Roundhand",cursive;font-size:38px;font-weight:400;letter-spacing:0;color:var(--acc);line-height:.7;margin-left:-2px}
+.nav{display:flex;justify-content:center;align-items:center;gap:14px;margin:16px 0 6px}
+.nav button{width:42px;height:42px;padding:0;font-size:20px;line-height:1}
+.nav button:disabled{opacity:.3}
+.ring{display:flex;align-items:center;gap:24px}
+.ring svg{width:116px;height:116px;transform:rotate(-90deg)}
+.ring circle:first-child{stroke:rgba(122,106,98,.14)}
+.ring circle:last-child{filter:drop-shadow(0 0 6px rgba(233,169,75,.65))}
+.ring .mid{position:absolute;text-align:center;width:116px}
+.ring .mid b{font-size:28px;font-weight:300;display:block;letter-spacing:-.02em}
+.kv{display:flex;justify-content:space-between;gap:30px;margin:6px 0}.kv b{font-size:15px}
+.bar{height:9px;background:rgba(122,106,98,.14);border-radius:9px;overflow:hidden;margin:6px 0 14px;box-shadow:inset 0 1px 2px rgba(122,106,98,.18)}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--blue),var(--acc));border-radius:9px;transition:width .4s ease}
 .line{display:flex;justify-content:space-between}
 .meal .head{display:flex;justify-content:space-between;align-items:center}
-.entry{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--line);margin-top:10px;padding-top:10px}
-.entry .x{background:none;border:0;color:var(--mut);padding:2px 6px}
-.tag{display:inline-block;background:var(--field);color:var(--acc);border-radius:9px;font-size:11px;padding:2px 9px;margin-bottom:6px}
-.chips{display:flex;gap:8px;overflow-x:auto;padding:4px 0 6px;scrollbar-width:none}
-.chips button{border-radius:20px;white-space:nowrap;padding:7px 14px}
-.chips button.on{background:var(--acc);color:var(--acc2);font-weight:700;border-color:var(--acc)}
-.food{display:flex;justify-content:space-between;gap:10px;padding:11px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.entry{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--line);margin-top:12px;padding-top:12px}
+.entry .x{background:none;border:0;box-shadow:none;color:var(--mut);padding:2px 8px;-webkit-backdrop-filter:none;backdrop-filter:none}
+.tag{display:inline-block;background:rgba(143,155,179,.28);color:#5b6680;border-radius:999px;font-size:11px;font-weight:500;padding:3px 11px;margin-bottom:8px}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:6px 2px 8px;scrollbar-width:none}
+.chips button{white-space:nowrap;padding:8px 15px;font-size:13px}
+.chips button.on{background:linear-gradient(160deg,#8f5a6a,#6a3f4d);color:#fff;font-weight:600;border-color:transparent}
+.food{display:flex;justify-content:space-between;gap:10px;padding:13px 0;border-bottom:1px solid var(--line);cursor:pointer}
 .food:last-child{border:0}.food .r{text-align:right}
-ul.f{padding-left:20px;margin:10px 0}ul.f li{margin:7px 0;color:#c7d8cd}
-.plan{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line)}
+ul.f{padding-left:20px;margin:12px 0}ul.f li{margin:8px 0;color:#5c4d47}
+.plan{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line)}
 .plan:last-child{border:0}
-.tabs{position:fixed;left:0;right:0;bottom:0;background:#0c1712f2;border-top:1px solid var(--line);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom)}
-.tabs div{display:flex;width:100%;max-width:480px}
-.tabs button{flex:1;background:none;border:0;border-radius:0;padding:16px 0;color:var(--mut);font-weight:600}
-.tabs button.on{color:var(--acc)}
-#modal{position:fixed;inset:0;background:#000a;display:none;align-items:flex-end;justify-content:center;z-index:9}
+/* Floating glass tab bar, iOS 26 style */
+.tabs{position:fixed;left:0;right:0;bottom:calc(14px + env(safe-area-inset-bottom));display:flex;justify-content:center;padding:0 16px;pointer-events:none;z-index:20}
+.tabs div{pointer-events:auto;display:flex;width:100%;max-width:440px;gap:4px;padding:6px;border-radius:999px;background:linear-gradient(150deg,rgba(255,255,255,.62),rgba(255,255,255,.3));-webkit-backdrop-filter:blur(30px) saturate(180%);backdrop-filter:blur(30px) saturate(180%);border:1px solid rgba(255,255,255,.8);box-shadow:0 16px 40px rgba(90,64,54,.20),inset 0 1.5px 0 rgba(255,255,255,.95)}
+.tabs button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:0;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;border-radius:999px;padding:9px 0 8px;color:var(--mut);font-size:10.5px;font-weight:500}
+.tabs svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+.tabs button.on{color:var(--acc);background:rgba(255,255,255,.78);box-shadow:0 4px 14px rgba(90,64,54,.14),inset 0 1px 0 #fff}
+#modal{position:fixed;inset:0;background:rgba(58,47,43,.32);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);display:none;align-items:flex-end;justify-content:center;z-index:60}
 #modal.on{display:flex}
-#sheet{background:var(--card);border-radius:22px 22px 0 0;width:100%;max-width:480px;padding:18px 16px calc(18px + env(safe-area-inset-bottom));border:1px solid var(--line)}
-.sum{display:flex;justify-content:space-between;background:var(--field);border-radius:12px;padding:12px;margin-top:12px}
+#sheet{background:var(--card);-webkit-backdrop-filter:blur(40px) saturate(180%);backdrop-filter:blur(40px) saturate(180%);border-radius:36px 36px 0 0;width:100%;max-width:480px;padding:22px 18px calc(20px + env(safe-area-inset-bottom));border:1px solid rgba(255,255,255,.9);box-shadow:0 -12px 40px rgba(90,64,54,.2);position:relative}
+#sheet::before{content:"";position:absolute;top:8px;left:50%;width:40px;height:5px;margin-left:-20px;border-radius:9px;background:rgba(122,106,98,.28)}
+.sum{display:flex;justify-content:space-between;background:rgba(255,255,255,.6);border-radius:20px;padding:14px;margin-top:14px;box-shadow:inset 0 1px 3px rgba(122,106,98,.12)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
@@ -65,7 +87,7 @@ ul.f{padding-left:20px;margin:10px 0}ul.f li{margin:7px 0;color:#c7d8cd}
   <div class="row" style="align-items:stretch"><input id="bc" inputmode="numeric" placeholder="Type a barcode" style="flex:4"><button onclick="findBarcode()" style="flex:1">Find</button></div>
   <input id="q" placeholder="Search foods" oninput="renderList()" style="margin-top:14px">
   <div class="chips" id="chips"></div>
-  <div class="card" id="flist" style="padding:6px 16px"></div>
+  <div class="card" id="flist" style="padding:6px 18px"></div>
 
   <div class="card">
     <h2>Create a custom food</h2><small>Enter values per 100 g</small>
@@ -81,7 +103,7 @@ ul.f{padding-left:20px;margin:10px 0}ul.f li{margin:7px 0;color:#c7d8cd}
     <h2>Create a custom recipe</h2><small>Combine foods into one recipe you can log.</small>
     <label>Recipe name</label><input id="rn" placeholder="e.g. Chicken and rice">
     <div class="row" style="align-items:end"><div style="flex:3"><label>Ingredient</label><select id="ri"></select></div><div style="flex:1.2"><label>Grams</label><input id="rg" type="number" inputmode="decimal"></div></div>
-    <button onclick="addIng()" style="width:100%;margin-top:10px">Add ingredient</button>
+    <button onclick="addIng()" style="width:100%;margin-top:12px">Add ingredient</button>
     <div id="rlist"></div>
     <button class="btn" onclick="saveRecipe()">Save recipe</button>
   </div>
@@ -118,7 +140,10 @@ ul.f{padding-left:20px;margin:10px 0}ul.f li{margin:7px 0;color:#c7d8cd}
 </section>
 
 <nav class="tabs"><div id="tabs">
-  <button data-t="today" class="on">Today</button><button data-t="foods">Foods</button><button data-t="pro">Pro</button><button data-t="profile">Profile</button>
+  <button data-t="today" class="on"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6L7 7M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4"/></svg>Today</button>
+  <button data-t="foods"><svg viewBox="0 0 24 24"><path d="M12 7c-4-3-8 0-7 5s4 9 7 8c3 1 6-3 7-8s-3-8-7-5z"/><path d="M12 7c0-2 1-3 3-4"/></svg>Foods</button>
+  <button data-t="pro"><svg viewBox="0 0 24 24"><path d="M12 3l2 6 6 2-6 2-2 6-2-6-6-2 6-2z"/></svg>Pro</button>
+  <button data-t="profile"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>Profile</button>
 </div></nav>
 
 <div id="modal" onclick="if(event.target===this)closeModal()"><div id="sheet"></div></div>
@@ -194,7 +219,7 @@ function showTab(t){
   if(t==='today')renderToday(); if(t==='foods')renderFoods(); if(t==='pro')renderPro(); if(t==='profile')renderProfile();
   window.scrollTo(0,0);
 }
-$('tabs').onclick=e=>{if(e.target.dataset.t)showTab(e.target.dataset.t)};
+$('tabs').onclick=e=>{const b=e.target.closest('button');if(b&&b.dataset.t)showTab(b.dataset.t)};
 
 /* ---------- Today ---------- */
 function suggestions(){
@@ -225,9 +250,9 @@ function renderToday(){
     <div style="flex:1"><div class="kv"><span class="mut">Goal</span><b>${t.kcal}</b></div><div class="kv"><span class="mut">Eaten</span><b>${Math.round(tot.k)}</b></div></div>
   </div>
   <div class="card">${bar('Protein',tot.p,t.prot)}${bar('Carbs',tot.c,t.carb)}${bar('Fat',tot.f,t.fat)}</div>
-  <div class="card"><div class="top"><div><h2>Water</h2><small>${w} / ${t.water} ml</small></div><div class="row" style="gap:8px"><button onclick="addWater(-250)">−</button><button onclick="addWater(250)" style="white-space:nowrap">+ 250 ml</button></div></div><div class="bar" style="margin:12px 0 0"><i style="width:${Math.min(100,w/t.water*100)}%"></i></div></div>
+  <div class="card"><div class="top"><div><h2>Water</h2><small>${w} / ${t.water} ml</small></div><div class="row" style="gap:8px"><button onclick="addWater(-250)">−</button><button onclick="addWater(250)" style="white-space:nowrap">+ 250 ml</button></div></div><div class="bar" style="margin:14px 0 0"><i style="width:${Math.min(100,w/t.water*100)}%"></i></div></div>
   ${sug}
-  ${isPro()?'':`<div class="card"><span class="tag">Patrocinado</span><h2>Recipe of the week</h2><small>Demo sponsor slot. Local food brands can feature a nutritionist-reviewed recipe here. Pro removes ads.</small></div>`}
+  ${isPro()?'':`<div class="card"><span class="tag">Sponsored</span><h2>Recipe of the week</h2><small>Demo sponsor slot. Local food brands can feature a nutritionist-reviewed recipe here. Pro removes ads.</small></div>`}
   ${MEALS.map(m=>{const es=L.map((e,i)=>({e,i})).filter(x=>x.e.meal===m);return `<div class="card meal"><div class="head"><div><h2>${m}</h2><small>${Math.round(sum(es.map(x=>x.e)).k)} kcal</small></div><button onclick="addTo('${m}')">+ Add</button></div>
     ${es.map(({e,i})=>`<div class="entry"><div><div>${esc(e.name)}</div><small>${e.g} g · P ${r1(e.p)} · C ${r1(e.c)} · F ${r1(e.f)}</small></div><div><b>${Math.round(e.k)} kcal</b><button class="x" onclick="delEntry(${i})">×</button></div></div>`).join('')}</div>`}).join('')}`;
 }
@@ -276,7 +301,7 @@ let cur=null;
 function openAdd(id){
   cur=allFoods().find(f=>f.id===id);
   const f=cur;
-  $('sheet').innerHTML=`<div class="top"><h2>${esc(f.name)}</h2><button onclick="closeModal()" style="border:0;background:none">×</button></div>
+  $('sheet').innerHTML=`<div class="top"><h2>${esc(f.name)}</h2><button onclick="closeModal()" style="width:36px;height:36px;padding:0">×</button></div>
   <small>Per 100 g: ${f.k} kcal · P ${f.p} g · C ${f.c} g · F ${f.f} g</small>
   <div class="row"><div><label>Amount (g)</label><input id="ag" type="number" inputmode="decimal" value="${f.s}" oninput="fromG()"></div><div><label>Servings</label><input id="as" type="number" inputmode="decimal" step="0.1" value="1" oninput="fromS()"></div></div>
   <label>Meal</label><select id="am">${MEALS.map(m=>`<option ${m===pendingMeal?'selected':''}>${m}</option>`).join('')}</select>
