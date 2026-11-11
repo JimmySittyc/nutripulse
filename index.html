@@ -67,7 +67,7 @@ ul.f{padding-left:20px;margin:12px 0}ul.f li{margin:8px 0;color:#4a4743}
 /* Floating glass tab bar, iOS 26 style */
 .tabs{position:fixed;left:0;right:0;bottom:calc(14px + env(safe-area-inset-bottom));display:flex;justify-content:center;padding:0 16px;pointer-events:none;z-index:20}
 .tabs div{pointer-events:auto;display:flex;width:100%;max-width:440px;gap:4px;padding:6px;border-radius:999px;background:rgba(255,255,255,.75);-webkit-backdrop-filter:blur(30px) saturate(180%);backdrop-filter:blur(30px) saturate(180%);border:1px solid rgba(26,24,22,.07);box-shadow:0 8px 24px rgba(26,24,22,.10)}
-.tabs button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:0;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;border-radius:999px;padding:9px 0 8px;color:var(--mut);font-size:10.5px;font-weight:500}
+.tabs button{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:0;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;border-radius:999px;padding:9px 0 8px;color:var(--mut);font-size:10.5px;font-weight:500}
 .tabs svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
 .tabs button.on{color:var(--acc);background:rgba(26,24,22,.06)}
 #modal{position:fixed;inset:0;background:rgba(26,24,22,.30);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);display:none;align-items:flex-end;justify-content:center;z-index:60}
@@ -157,11 +157,84 @@ ul.f{padding-left:20px;margin:12px 0}ul.f li{margin:8px 0;color:#4a4743}
   <button data-t="foods"><svg viewBox="0 0 24 24"><path d="M12 7c-4-3-8 0-7 5s4 9 7 8c3 1 6-3 7-8s-3-8-7-5z"/><path d="M12 7c0-2 1-3 3-4"/></svg>Foods</button>
   <button data-t="pro"><svg viewBox="0 0 24 24"><path d="M12 3l2 6 6 2-6 2-2 6-2-6-6-2 6-2z"/></svg>Pro</button>
   <button data-t="profile"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>Profile</button>
+  <button data-t="lang"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg><span id="langlbl">Español</span></button>
 </div></nav>
 
 <div id="modal" onclick="if(event.target===this)closeModal()"><div id="sheet"></div></div>
 
 <script>
+/* ---------- Language (EN / ES). English strings are the keys. ---------- */
+const ES={
+'Today':'Hoy','Foods':'Alimentos','Profile':'Perfil','Pro':'Pro',
+'Food database':'Base de alimentos','{n} foods':'{n} alimentos','Barcode':'Código de barras','Type a barcode':'Escribe un código de barras','Find':'Buscar','Search foods':'Buscar alimentos',
+'Create a custom food':'Crear un alimento propio','Enter values per 100 g':'Ingresa los valores por 100 g','Name':'Nombre','e.g. Homemade granola':'p. ej. Granola casera',
+'Calories':'Calorías','Protein (g)':'Proteína (g)','Carbs (g)':'Carbohidratos (g)','Fat (g)':'Grasa (g)','Typical serving in grams (optional)':'Porción típica en gramos (opcional)',
+'Barcode (optional)':'Código de barras (opcional)','Micronutrients per 100 g (optional)':'Micronutrientes por 100 g (opcional)','Fiber g':'Fibra g','Calcium mg':'Calcio mg','Iron mg':'Hierro mg',
+'Potassium mg':'Potasio mg','Vitamin C mg':'Vitamina C mg','Sodium mg':'Sodio mg','Save food':'Guardar alimento','Create a custom recipe':'Crear una receta propia',
+'Combine foods into one recipe you can log.':'Combina alimentos en una receta que puedas registrar.','Recipe name':'Nombre de la receta','e.g. Chicken and rice':'p. ej. Pollo con arroz',
+'Ingredient':'Ingrediente','Grams':'Gramos','Add ingredient':'Agregar ingrediente','Save recipe':'Guardar receta',
+'Welcome to NutriPulse':'Bienvenido a NutriPulse','Tell us about you so NutriPulse can set your daily calories, macros and water.':'Cuéntanos sobre ti para que NutriPulse calcule tus calorías, macros y agua diarios.',
+'Sex (for the formula)':'Sexo (para la fórmula)','Female':'Mujer','Male':'Hombre','Age':'Edad','Height (cm)':'Altura (cm)','Weight (kg)':'Peso (kg)','Activity level':'Nivel de actividad',
+'Sedentary (little exercise)':'Sedentario (poco ejercicio)','Light (1-3 days/week)':'Ligero (1-3 días/semana)','Moderate (3-5 days/week)':'Moderado (3-5 días/semana)',
+'Very active (6-7 days/week)':'Muy activo (6-7 días/semana)','Athlete or physical job':'Atleta o trabajo físico','Goal':'Objetivo','Lose fat (about -15%)':'Perder grasa (aprox. -15%)',
+'Maintain weight':'Mantener peso','Build muscle (about +10%)':'Ganar músculo (aprox. +10%)','Save and recalculate':'Guardar y recalcular','Your daily targets':'Tus metas diarias',
+'Erase all my data':'Borrar todos mis datos',
+'Estimates only, not medical advice. Food and micronutrient values are typical estimates and vary by brand and preparation. Your data is saved only in this browser.':'Solo son estimaciones, no consejo médico. Los valores de alimentos y micronutrientes son estimaciones típicas y varían según la marca y la preparación. Tus datos se guardan solo en este navegador.',
+'Erase all your data from this browser? This cannot be undone.':'¿Borrar todos tus datos de este navegador? Esta acción no se puede deshacer.',
+'Resting energy (BMR) {bmr} kcal · Maintenance (TDEE) {tdee} kcal. Protein is set per kg of body weight, fat is 25% of calories, and carbs fill the rest.':'Energía en reposo (TMB) {bmr} kcal · Mantenimiento (GET) {tdee} kcal. La proteína se fija por kg de peso corporal, la grasa es el 25% de las calorías y los carbohidratos completan el resto.',
+'Under 18: calorie deficits are not set. Talk to a doctor before trying to lose weight.':'Menores de 18: no se establecen déficits calóricos. Habla con un médico antes de intentar bajar de peso.',
+'Breakfast':'Desayuno','Lunch':'Almuerzo','Dinner':'Cena','Snacks':'Meriendas',
+'Water':'Agua','Eaten':'Consumido','kcal left':'kcal restantes','kcal over':'kcal de más','Hi, {name}':'Hola, {name}','Micronutrients':'Micronutrientes',
+'Daily reference values for your profile. Sodium is a limit.':'Valores diarios de referencia para tu perfil. El sodio es un límite.','+ Add':'+ Agregar',
+'Sponsored':'Patrocinado','Recipe of the week':'Receta de la semana','Demo sponsor slot. Local food brands can feature a nutritionist-reviewed recipe here. Pro removes ads.':'Espacio patrocinado de demostración. Las marcas locales pueden mostrar aquí una receta revisada por nutricionistas. Pro quita los anuncios.',
+'You have {p} g protein and {f} g fat left':'Te quedan {p} g de proteína y {f} g de grasa','Unlock Pro to see what you can cook right now with your pantry.':'Activa Pro para ver qué puedes cocinar ahora con tu despensa.',
+'See NutriPulse Pro':'Ver NutriPulse Pro','Pro active · {n} day left':'Pro activo · queda {n} día','Pro active · {n} days left':'Pro activo · quedan {n} días',
+'Pantry-to-Plate: recipes made from your pantry':'De la despensa al plato: recetas hechas con lo que tienes','Gram-precise portions that fill your remaining macros':'Porciones exactas en gramos que completan tus macros restantes',
+'Smart suggestions on the Today tab':'Sugerencias inteligentes en la pestaña Hoy','Grocery list with local price estimates, shareable on WhatsApp':'Lista de compras con precios locales estimados, para compartir por WhatsApp','No ads':'Sin anuncios',
+'Smart suggestion':'Sugerencia inteligente','Pantry-to-Plate':'De la despensa al plato','Fills your remaining macros':'Completa tus macros restantes','Cook with what you have':'Cocina con lo que tienes',
+'Add foods to your pantry in the Pro tab to see what you can cook.':'Agrega alimentos a tu despensa en la pestaña Pro para ver qué puedes cocinar.','Add a starter pantry':'Agregar una despensa básica',
+'Add more foods to your pantry to see more recipes.':'Agrega más alimentos a tu despensa para ver más recetas.','Add protein foods to your pantry.':'Agrega alimentos con proteína a tu despensa.',
+'NutriPulse Pro':'NutriPulse Pro','Start 7-day free trial':'Empezar prueba gratis de 7 días','Demo: no payment needed. The trial unlocks Pro on this device.':'Demo: no se necesita pago. La prueba activa Pro en este dispositivo.',
+'My pantry':'Mi despensa','Your pantry is empty.':'Tu despensa está vacía.','Recipes from your pantry':'Recetas con tu despensa',
+'Portions are scaled in grams to a meal-sized share (about 30%) of your day, never more than your remaining calories.':'Las porciones se ajustan en gramos a una comida (cerca del 30% de tu día), sin superar las calorías que te quedan.',
+'Add a few foods to your pantry to see recipes you can make.':'Agrega algunos alimentos a tu despensa para ver recetas que puedes preparar.','Grocery list':'Lista de compras',
+'Local price estimates in Bs (placeholders).':'Precios locales estimados en Bs (referenciales).','Nothing here yet. Add the missing ingredients from a recipe.':'Aún no hay nada. Agrega los ingredientes que faltan de una receta.',
+'Total':'Total','Share on WhatsApp':'Compartir por WhatsApp','Grocery list (NutriPulse)':'Lista de compras (NutriPulse)','Plans':'Planes','Add':'Agregar',
+'Pro, monthly':'Pro, mensual','Pro, yearly':'Pro, anual','Professionals (nutritionists, trainers)':'Profesionales (nutricionistas, entrenadores)','Gyms and universities':'Gimnasios y universidades',
+'Bs 25/month':'Bs 25/mes','Bs 199/year':'Bs 199/año','Bs 150/month':'Bs 150/mes','Bs 500/month':'Bs 500/mes',
+'Missing':'Faltan','Added to your grocery list ✓':'Agregado a tu lista de compras ✓','Add missing to grocery list':'Agregar faltantes a la lista de compras','Log this meal':'Registrar esta comida',
+'Per 100 g':'Por 100 g','per 100 g':'por 100 g','Amount (g)':'Cantidad (g)','Servings':'Porciones','Meal':'Comida','Typical serving':'Porción típica','Add to today':'Agregar a hoy',
+'Share of your daily target in this amount':'Porcentaje de tu meta diaria en esta cantidad','No foods found. Create a custom food below.':'No se encontraron alimentos. Crea un alimento propio abajo.',
+'No food with that barcode yet. Create a custom food and add its barcode.':'Aún no hay un alimento con ese código. Crea un alimento propio y agrega su código.',
+'Enter a name and calories per 100 g.':'Ingresa un nombre y las calorías por 100 g.','Enter a name and add at least one ingredient.':'Ingresa un nombre y agrega al menos un ingrediente.',
+'P':'P','C':'C','F':'G','Protein':'Proteína','Carbs':'Carbohidratos','Fat':'Grasa',
+'Fiber':'Fibra','Calcium':'Calcio','Iron':'Hierro','Potassium':'Potasio','Vitamin C':'Vitamina C','Sodium':'Sodio',
+'All':'Todos','Fruits':'Frutas','Vegetables':'Verduras','Dairy & eggs':'Lácteos y huevos','Grains':'Cereales','Legumes & nuts':'Legumbres y frutos secos','Fats & sweets':'Grasas y dulces','Bolivian dishes':'Platos bolivianos','My foods':'Mis alimentos',
+'1 medium':'1 unidad mediana','1 cup':'1 taza','1 slice':'1 rebanada','1 fillet':'1 filete','1 can':'1 lata','1 patty':'1 hamburguesa','1 steak':'1 bistec','1 chop':'1 chuleta','1 thigh':'1 muslo','1 large':'1 grande','1 glass':'1 vaso','1/2 cup':'1/2 taza','1 ear':'1 mazorca','1 tortilla':'1 tortilla','1 handful':'1 puñado','1 tbsp':'1 cda','1 tsp':'1 cdta','2 squares':'2 cuadritos','2 cookies':'2 galletas','1 scoop':'1 bola','1 piece':'1 pieza','1 plate':'1 plato','1 bowl':'1 tazón','1 skewer':'1 brocheta','1 sandwich':'1 sándwich','1 serving':'1 porción','whole recipe':'receta completa',
+'Apple':'Manzana','Banana':'Banana','Orange':'Naranja','Avocado':'Palta','Grapes':'Uvas','Strawberries':'Frutillas','Mango':'Mango','Papaya':'Papaya','Pineapple':'Piña',
+'Tomato':'Tomate','Carrot':'Zanahoria','Broccoli':'Brócoli','Spinach':'Espinaca','Onion':'Cebolla','Lettuce':'Lechuga','Cucumber':'Pepino','Pumpkin':'Zapallo','Bell pepper':'Pimentón',
+'Chicken breast, cooked':'Pechuga de pollo, cocida','Chicken thigh, cooked':'Muslo de pollo, cocido','Beef, ground, cooked':'Carne molida, cocida','Beef steak, cooked':'Bistec de res, cocido','Pork loin, cooked':'Lomo de cerdo, cocido','Tuna, canned':'Atún en lata','Salmon, cooked':'Salmón, cocido','Tilapia, cooked':'Tilapia, cocida','Trout, cooked':'Trucha, cocida',
+'Egg':'Huevo','Milk, whole':'Leche entera','Yogurt, plain':'Yogur natural','Greek yogurt':'Yogur griego','Cottage cheese':'Requesón',
+'Rice, white, cooked':'Arroz blanco, cocido','Pasta, cooked':'Pasta, cocida','Bread, white':'Pan blanco','Bread, whole wheat':'Pan integral','Oats, dry':'Avena, seca','Quinoa, cooked':'Quinua, cocida','Potato, boiled':'Papa, hervida','Sweet potato, baked':'Camote, horneado','Corn (choclo), boiled':'Choclo, hervido','Tortilla, corn':'Tortilla de maíz',
+'Almonds':'Almendras','Peanuts':'Maní','Walnuts':'Nueces','Lentils, cooked':'Lentejas, cocidas','Black beans, cooked':'Frijoles negros, cocidos','Chickpeas, cooked':'Garbanzos, cocidos','Peanut butter':'Mantequilla de maní',
+'Olive oil':'Aceite de oliva','Butter':'Mantequilla','Sugar':'Azúcar','Honey':'Miel','Dark chocolate':'Chocolate oscuro','Cookies':'Galletas','Ice cream':'Helado','Soda':'Gaseosa',
+'Chicken and rice bowl':'Bowl de pollo con arroz','Veggie omelette':'Tortilla de huevo con verduras','Tuna salad':'Ensalada de atún','Lentil stew':'Guiso de lentejas','Tomato pasta with mozzarella':'Pasta con tomate y mozzarella','Banana oatmeal':'Avena con banana','Bolivian-style rice, beef and egg':'Arroz, carne y huevo estilo boliviano','Salmon with sweet potato':'Salmón con camote','Chickpea and spinach sauté':'Salteado de garbanzos y espinaca','Greek yogurt parfait':'Parfait de yogur griego','Black bean quesadillas':'Quesadillas de frijoles negros','Tofu veggie stir-fry':'Salteado de tofu y verduras',
+'Steam the broccoli, warm the chicken and rice, and toss everything with the olive oil.':'Cocina al vapor el brócoli, calienta el pollo y el arroz, y mézclalo todo con el aceite de oliva.',
+'Soften the onion in oil, add tomato and spinach, then pour in the beaten eggs and fold.':'Sofríe la cebolla en aceite, agrega el tomate y la espinaca, luego vierte los huevos batidos y dobla.',
+'Drain the tuna, chop the vegetables, mix and dress with the oil.':'Escurre el atún, pica las verduras, mezcla y aliña con el aceite.',
+'Sauté onion and carrot, add tomato and lentils with a little water, and simmer 15 minutes.':'Sofríe la cebolla y la zanahoria, agrega el tomate y las lentejas con un poco de agua, y cocina a fuego lento 15 minutos.',
+'Simmer chopped tomato in oil, toss with the pasta and melt the mozzarella on top.':'Cocina el tomate picado en aceite, mézclalo con la pasta y derrite la mozzarella encima.',
+'Cook the oats in the milk for 5 minutes, then top with sliced banana and honey.':'Cocina la avena en la leche por 5 minutos y cubre con banana en rodajas y miel.',
+'Brown the onion and beef, stir in the tomato and rice, and top with a fried egg.':'Sofríe la cebolla y la carne, agrega el tomate y el arroz, y corona con un huevo frito.',
+'Bake the salmon and sweet potato, wilt the spinach in oil and plate together.':'Hornea el salmón y el camote, saltea la espinaca en aceite y sirve todo junto.',
+'Sauté the onion in oil, add the chickpeas, then the spinach until wilted.':'Sofríe la cebolla en aceite, agrega los garbanzos y luego la espinaca hasta que se marchite.',
+'Layer yogurt, sliced banana and chopped almonds, and finish with honey.':'Alterna capas de yogur, banana en rodajas y almendras picadas, y termina con miel.',
+'Fill the tortillas with beans, cheese and tomato and toast until golden.':'Rellena las tortillas con frijoles, queso y tomate y tuéstalas hasta que doren.',
+'Brown the tofu in oil, add the vegetables, and serve over the rice.':'Dora el tofu en aceite, agrega las verduras y sirve sobre el arroz.'
+};
+const tr=(s,o)=>{let x=(S.lang==='es'&&ES[s])||s;if(o)for(const k in o)x=x.split('{'+k+'}').join(o[k]);return x};
+const mac=(p,c,f)=>`${tr('P')} ${p} · ${tr('C')} ${c} · ${tr('F')} ${f}`;
+
 /* Micronutrients per 100 g: [fiber g, calcium mg, iron mg, potassium mg, vitamin C mg, sodium mg]. Typical estimates. */
 const MICRO={
 'Apple':[2.4,6,0.1,107,5,1],'Banana':[2.6,5,0.3,358,9,1],'Orange':[2.4,40,0.1,181,53,0],'Avocado':[6.7,12,0.6,485,10,7],'Grapes':[0.9,10,0.4,191,3,2],
@@ -190,11 +263,11 @@ function donut(p,c,f,k){
   const e=[p*4,c*4,f*9],T=(e[0]+e[1]+e[2])||1,R=40,C=2*Math.PI*R,g=[p,c,f],L=['Protein','Carbs','Fat'];let o=0;
   const segs=e.map((v,i)=>{const l=v/T*C,x=`<circle cx="50" cy="50" r="${R}" fill="none" stroke="${DONUT[i]}" stroke-width="14" stroke-dasharray="${l} ${C-l}" stroke-dashoffset="${-o}"/>`;o+=l;return x}).join('');
   return `<div class="pie"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="${R}" fill="none" stroke="rgba(26,24,22,.08)" stroke-width="14"/>${segs}</svg><div class="pc"><b>${Math.round(k)}</b><small>kcal</small></div></div>
-  <div class="leg">${L.map((n,i)=>`<div><i style="background:${DONUT[i]}"></i>${n}<b>${r1(g[i])} g</b><small>${Math.round(e[i]/T*100)}%</small></div>`).join('')}</div>`;
+  <div class="leg">${L.map((n,i)=>`<div><i style="background:${DONUT[i]}"></i>${tr(n)}<b>${r1(g[i])} g</b><small>${Math.round(e[i]/T*100)}%</small></div>`).join('')}</div>`;
 }
 function miRows(v,tg,pct){
   return MI.map((m,i)=>{const p=tg[i]?v[i]/tg[i]*100:0,over=i===5&&p>100;
-    return `<div class="line"><span>${m[0]}</span><span class="mut">${r1(v[i])} ${m[1]}${pct?' · '+Math.round(p)+'%':' / '+tg[i]+' '+m[1]}</span></div><div class="bar"><i style="width:${Math.min(100,p)}%${over?';background:var(--red)':''}"></i></div>`}).join('');
+    return `<div class="line"><span>${tr(m[0])}</span><span class="mut">${r1(v[i])} ${m[1]}${pct?' · '+Math.round(p)+'%':' / '+tg[i]+' '+m[1]}</span></div><div class="bar"><i style="width:${Math.min(100,p)}%${over?';background:var(--red)':''}"></i></div>`}).join('');
 }
 
 /* ---------- Food data: name, category, kcal, protein, carbs, fat (per 100 g), serving g, serving label ---------- */
@@ -232,10 +305,11 @@ const CATS=['All','Fruits','Vegetables','Protein','Dairy & eggs','Grains','Legum
 const MEALS=['Breakfast','Lunch','Dinner','Snacks'];
 const PRICE_KG={'Fruits':12,'Vegetables':8,'Protein':45,'Dairy & eggs':20,'Grains':10,'Legumes & nuts':25,'Fats & sweets':30,'Bolivian dishes':35,'My foods':20}; // placeholder Bs/kg
 const PLANS=[['Pro, monthly','Bs 25/month'],['Pro, yearly','Bs 199/year'],['Professionals (nutritionists, trainers)','Bs 150/month'],['Gyms and universities','Bs 500/month']];
+const FEATS=['Pantry-to-Plate: recipes made from your pantry','Gram-precise portions that fill your remaining macros','Smart suggestions on the Today tab','Grocery list with local price estimates, shareable on WhatsApp','No ads'];
 
 /* ---------- State ---------- */
 const KEY='nutripulse-v1';
-const fresh=()=>({profile:{name:'',sex:'male',age:25,h:170,w:70,act:1.55,goal:'maintain'},log:{},water:{},custom:[],pro:0,pantry:[],setup:false});
+const fresh=()=>({profile:{name:'',sex:'male',age:25,h:170,w:70,act:1.55,goal:'maintain'},log:{},water:{},custom:[],pro:0,pantry:[],grocery:[],setup:false,lang:String(navigator.language||'en').toLowerCase().startsWith('es')?'es':'en'});
 let S=load();
 function load(){try{return Object.assign(fresh(),JSON.parse(localStorage.getItem(KEY)||'{}'))}catch(e){return fresh()}}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
@@ -247,6 +321,25 @@ const dstr=d=>new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slic
 const todayStr=()=>dstr(new Date());
 let vd=todayStr(), cat='All', pendingMeal='Breakfast', recipe=[];
 const isPro=()=>Date.now()<S.pro;
+const daysLeft=()=>Math.max(1,Math.ceil((S.pro-Date.now())/864e5));
+const proText=()=>{const n=daysLeft();return tr(n>1?'Pro active · {n} days left':'Pro active · {n} day left',{n})};
+
+/* ---------- Language switch: translates the static page; dynamic views use tr() ---------- */
+const SKIP='#today,#pro,#sheet,#ptargets,#pnote,#ptitle,#count,#chips,#flist,#rlist,#ri,#langlbl,script,style';
+function applyLang(){
+  document.documentElement.lang=S.lang;
+  const w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);let n;
+  while(n=w.nextNode()){
+    if(n.parentElement.closest(SKIP))continue;
+    const raw=n.nodeValue,tx=raw.trim();if(!tx)continue;
+    if(n._en===undefined)n._en=tx;
+    n.nodeValue=raw.replace(tx,tr(n._en));
+  }
+  document.querySelectorAll('[placeholder]').forEach(e=>{if(e.dataset.en===undefined)e.dataset.en=e.placeholder;e.placeholder=tr(e.dataset.en)});
+  $('langlbl').textContent=S.lang==='es'?'English':'Español';
+}
+function rerender(){const v=document.querySelector('.view.on');const m={today:renderToday,foods:renderFoods,pro:renderPro,profile:renderProfile};if(v&&m[v.id])m[v.id]()}
+function toggleLang(){S.lang=S.lang==='es'?'en':'es';save();applyLang();rerender()}
 
 /* ---------- Targets (Mifflin-St Jeor) ---------- */
 function targets(p){
@@ -269,7 +362,70 @@ function showTab(t){
   if(t==='today')renderToday(); if(t==='foods')renderFoods(); if(t==='pro')renderPro(); if(t==='profile')renderProfile();
   window.scrollTo(0,0);
 }
-$('tabs').onclick=e=>{const b=e.target.closest('button');if(b&&b.dataset.t)showTab(b.dataset.t)};
+$('tabs').onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.t==='lang')toggleLang();else if(b.dataset.t)showTab(b.dataset.t)};
+
+/* ---------- Pantry-to-Plate: recipes, portions, grocery ---------- */
+/* [name, minutes, [[food, base grams], ...], steps] */
+const RECIPES=[
+['Chicken and rice bowl',20,[['Chicken breast, cooked',120],['Rice, white, cooked',150],['Broccoli',90],['Olive oil',7]],'Steam the broccoli, warm the chicken and rice, and toss everything with the olive oil.'],
+['Veggie omelette',10,[['Egg',150],['Tomato',60],['Onion',40],['Spinach',30],['Olive oil',7]],'Soften the onion in oil, add tomato and spinach, then pour in the beaten eggs and fold.'],
+['Tuna salad',10,[['Tuna, canned',120],['Lettuce',60],['Tomato',80],['Cucumber',60],['Olive oil',7]],'Drain the tuna, chop the vegetables, mix and dress with the oil.'],
+['Lentil stew',30,[['Lentils, cooked',200],['Carrot',60],['Onion',50],['Tomato',80],['Olive oil',7]],'Sauté onion and carrot, add tomato and lentils with a little water, and simmer 15 minutes.'],
+['Tomato pasta with mozzarella',15,[['Pasta, cooked',180],['Tomato',150],['Mozzarella',40],['Olive oil',7]],'Simmer chopped tomato in oil, toss with the pasta and melt the mozzarella on top.'],
+['Banana oatmeal',10,[['Oats, dry',50],['Milk, whole',200],['Banana',100],['Honey',10]],'Cook the oats in the milk for 5 minutes, then top with sliced banana and honey.'],
+['Bolivian-style rice, beef and egg',25,[['Rice, white, cooked',150],['Beef, ground, cooked',100],['Egg',50],['Onion',40],['Tomato',60]],'Brown the onion and beef, stir in the tomato and rice, and top with a fried egg.'],
+['Salmon with sweet potato',25,[['Salmon, cooked',130],['Sweet potato, baked',150],['Spinach',60],['Olive oil',7]],'Bake the salmon and sweet potato, wilt the spinach in oil and plate together.'],
+['Chickpea and spinach sauté',15,[['Chickpeas, cooked',150],['Spinach',60],['Onion',40],['Olive oil',10]],'Sauté the onion in oil, add the chickpeas, then the spinach until wilted.'],
+['Greek yogurt parfait',5,[['Greek yogurt',170],['Banana',100],['Almonds',20],['Honey',10]],'Layer yogurt, sliced banana and chopped almonds, and finish with honey.'],
+['Black bean quesadillas',15,[['Tortilla, corn',75],['Black beans, cooked',100],['Queso fresco',40],['Tomato',50]],'Fill the tortillas with beans, cheese and tomato and toast until golden.'],
+['Tofu veggie stir-fry',20,[['Tofu',150],['Bell pepper',80],['Broccoli',80],['Rice, white, cooked',150],['Olive oil',7]],'Brown the tofu in oil, add the vegetables, and serve over the rice.']
+];
+const STARTER=['Rice, white, cooked','Egg','Chicken breast, cooked','Tomato','Onion','Olive oil','Lentils, cooked','Oats, dry','Milk, whole','Banana','Broccoli','Spinach','Carrot','Honey'];
+const byName=n=>FOODS.find(f=>f.name===n);
+const gPrice=x=>Math.max(1,Math.round(PRICE_KG[x.f.cat]*x.g/1000));
+const mealNow=()=>{const h=new Date().getHours();return h<11?'Breakfast':h<16?'Lunch':h<21?'Dinner':'Snacks'};
+function refresh(){const v=document.querySelector('.view.on');const m={today:renderToday,pro:renderPro};if(v&&m[v.id])m[v.id]()}
+/* Scale a recipe so its calories fill a meal-sized share of what is left today (0.5x to 2x), grams rounded to 5 */
+function recipeInfo(r){
+  const t=targets(S.profile),tot=sum(S.log[todayStr()]||[]),R=t.kcal-tot.k;
+  const items=r[2].map(([n,g])=>({f:byName(n),g}));
+  const base=items.reduce((a,i)=>a+i.f.k*i.g/100,0);
+  const sc=R>0?Math.min(2,Math.max(.5,Math.min(R,t.kcal*.3)/base)):1;
+  const out=items.map(i=>({f:i.f,g:Math.max(5,Math.round(i.g*sc/5)*5)}));
+  const tt=out.reduce((a,i)=>({k:a.k+i.f.k*i.g/100,p:a.p+i.f.p*i.g/100,c:a.c+i.f.c*i.g/100,f:a.f+i.f.f*i.g/100}),{k:0,p:0,c:0,f:0});
+  return {r,out,tt,miss:out.filter(i=>!S.pantry.includes(i.f.id))};
+}
+const matchRecipes=()=>RECIPES.map(recipeInfo).filter(x=>x.miss.length<=2).sort((a,b)=>a.miss.length-b.miss.length);
+function recipeCard(x,full){
+  const {r,out,tt,miss}=x,id=RECIPES.indexOf(r),listed=miss.length&&miss.every(i=>S.grocery.some(y=>y.id===i.f.id));
+  return `<div class="entry" style="display:block"><div class="top"><b>${esc(tr(r[0]))}</b><small>${r[1]} min</small></div>
+  <small>${Math.round(tt.k)} kcal · ${mac(Math.round(tt.p)+' g',Math.round(tt.c)+' g',Math.round(tt.f)+' g')}</small>
+  <div style="margin-top:8px">${out.map(i=>`<div class="line"><span>${esc(tr(i.f.name))}</span><span class="mut">${i.g} g</span></div>`).join('')}</div>
+  ${full?`<p class="mut" style="margin-top:8px">${esc(tr(r[3]))}</p>`:''}
+  ${miss.length?`<small style="display:block;margin-top:8px">${tr('Missing')}: ${miss.map(i=>esc(tr(i.f.name))).join(', ')}</small>${listed?`<small style="display:block;margin-top:6px">${tr('Added to your grocery list ✓')}</small>`:`<button style="margin-top:8px" onclick="addMissing(${id})">${tr('Add missing to grocery list')}</button>`}`:`<button class="btn" style="margin-top:12px" onclick="logRecipe(${id})">${tr('Log this meal')}</button>`}</div>`;
+}
+function portionsCard(){
+  return `<div class="card"><h2>${tr('Fills your remaining macros')}</h2>${suggestions().map(x=>{const m=v=>r1(v*x.g/100);return `<div class="entry"><div><div>${esc(tr(x.f.name))} · ${x.g} g</div><small>${mac(m(x.f.p),m(x.f.c),m(x.f.f))}</small></div><b>${x.k} kcal</b></div>`}).join('')||`<p class="mut" style="margin-top:10px">${tr('Add protein foods to your pantry.')}</p>`}</div>`;
+}
+function groceryItems(){return S.grocery.map(x=>({f:allFoods().find(f=>f.id===x.id),g:x.g})).filter(x=>x.f)}
+function groceryCard(){
+  const gl=groceryItems(),total=gl.reduce((a,x)=>a+gPrice(x),0);
+  return `<div class="card"><h2>${tr('Grocery list')}</h2><small>${tr('Local price estimates in Bs (placeholders).')}</small>${gl.map(x=>`<div class="entry"><span>${esc(tr(x.f.name))} · ${x.g} g</span><span>Bs ${gPrice(x)} <button class="x" onclick="bought('${x.f.id}')">✓</button><button class="x" onclick="dropGrocery('${x.f.id}')">×</button></span></div>`).join('')||`<p class="mut" style="margin-top:10px">${tr('Nothing here yet. Add the missing ingredients from a recipe.')}</p>`}${gl.length?`<div class="entry"><b>${tr('Total')}</b><b>Bs ${total}</b></div><button class="btn" onclick="shareList()">${tr('Share on WhatsApp')}</button>`:''}</div>`;
+}
+function logRecipe(id){
+  const x=recipeInfo(RECIPES[id]),d=todayStr(),meal=mealNow();
+  x.out.forEach(i=>{const m=v=>v*i.g/100;(S.log[d]=S.log[d]||[]).push({name:i.f.name,meal,g:i.g,k:m(i.f.k),p:m(i.f.p),c:m(i.f.c),f:m(i.f.f),mi:mi(i.f).map(m)})});
+  save();vd=d;showTab('today');
+}
+function addMissing(id){
+  recipeInfo(RECIPES[id]).miss.forEach(i=>{const e=S.grocery.find(y=>y.id===i.f.id);if(e)e.g=Math.max(e.g,i.g);else S.grocery.push({id:i.f.id,g:i.g})});
+  save();refresh();
+}
+function bought(id){if(!S.pantry.includes(id))S.pantry.push(id);S.grocery=S.grocery.filter(x=>x.id!==id);save();refresh()}
+function dropGrocery(id){S.grocery=S.grocery.filter(x=>x.id!==id);save();refresh()}
+function starterPantry(){STARTER.forEach(n=>{const f=byName(n);if(f&&!S.pantry.includes(f.id))S.pantry.push(f.id)});save();refresh()}
+/* Pressing the trial unlocks Pro, stocks a starter pantry if it is empty, and opens the main page with every Pro feature */
+function startTrial(){S.pro=Date.now()+7*864e5;if(!S.pantry.length)STARTER.forEach(n=>{const f=byName(n);if(f)S.pantry.push(f.id)});save();showTab('today')}
 
 /* ---------- Today ---------- */
 function suggestions(){
@@ -280,32 +436,36 @@ function suggestions(){
 function renderToday(){
   const P=S.profile,t=targets(P),L=S.log[vd]||[],tot=sum(L),w=S.water[vd]||0,left=t.kcal-tot.k;
   const pct=Math.min(1,tot.k/t.kcal),C=2*Math.PI*45,isT=vd===todayStr();
-  const label=isT?'Today':new Date(vd+'T12:00').toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'});
-  const bar=(n,a,b)=>`<div class="line"><span>${n}</span><span class="mut">${Math.round(a)} / ${b} g</span></div><div class="bar"><i style="width:${Math.min(100,a/b*100||0)}%"></i></div>`;
-  const remP=Math.max(0,t.prot-tot.p),remF=Math.max(0,t.fat-tot.f);
+  const label=isT?tr('Today'):new Date(vd+'T12:00').toLocaleDateString(S.lang,{weekday:'short',month:'short',day:'numeric'});
+  const bar=(n,a,b)=>`<div class="line"><span>${tr(n)}</span><span class="mut">${Math.round(a)} / ${b} g</span></div><div class="bar"><i style="width:${Math.min(100,a/b*100||0)}%"></i></div>`;
+  const remP=Math.max(0,t.prot-tot.p),remF=Math.max(0,t.fat-tot.f),rem={p:Math.round(remP),f:Math.round(remF)};
   let sug;
-  if(isPro()&&S.pantry.length){
-    sug=`<div class="card glow"><h2>Cook with what you have</h2><small>You have ${Math.round(remP)} g protein and ${Math.round(remF)} g fat left</small>${suggestions().map(s=>`<div class="entry"><span>${esc(s.f.name)} · ${s.g} g</span><b>${s.k} kcal</b></div>`).join('')||'<p class="mut">Add protein foods to your pantry in the Pro tab.</p>'}</div>`;
+  if(isPro()){
+    const rs=matchRecipes();
+    sug=`<div class="card"><h2>${proText()}</h2>${FEATS.map(x=>`<div style="margin-top:8px"><small>✓ ${tr(x)}</small></div>`).join('')}</div>
+  <div class="card glow"><h2>${tr('Smart suggestion')}</h2><small>${tr('You have {p} g protein and {f} g fat left',rem)}</small>${rs[0]?recipeCard(rs[0],false):`<p class="mut" style="margin-top:10px">${tr('Add foods to your pantry in the Pro tab to see what you can cook.')}</p>`}${S.pantry.length?'':`<button class="btn" onclick="starterPantry()">${tr('Add a starter pantry')}</button>`}</div>
+  <div class="card"><h2>${tr('Pantry-to-Plate')}</h2><small>${tr('Portions are scaled in grams to a meal-sized share (about 30%) of your day, never more than your remaining calories.')}</small>${rs.slice(1,4).map(x=>recipeCard(x,false)).join('')||`<p class="mut" style="margin-top:10px">${tr('Add more foods to your pantry to see more recipes.')}</p>`}</div>
+  ${portionsCard()}${groceryCard()}`;
   }else{
-    sug=`<div class="card glow"><h2>You have ${Math.round(remP)} g protein and ${Math.round(remF)} g fat left</h2><small>${isPro()?'Add foods to your pantry to see what you can cook.':'Unlock Pro to see what you can cook right now with your pantry.'}</small><button class="btn" onclick="showTab('pro')">${isPro()?'Open my pantry':'See NutriPulse Pro'}</button></div>`;
+    sug=`<div class="card glow"><h2>${tr('You have {p} g protein and {f} g fat left',rem)}</h2><small>${tr('Unlock Pro to see what you can cook right now with your pantry.')}</small><button class="btn" onclick="showTab('pro')">${tr('See NutriPulse Pro')}</button></div>
+  <div class="card"><span class="tag">${tr('Sponsored')}</span><h2>${tr('Recipe of the week')}</h2><small>${tr('Demo sponsor slot. Local food brands can feature a nutritionist-reviewed recipe here. Pro removes ads.')}</small></div>`;
   }
   $('today').innerHTML=`
-  <div class="top"><div class="brand">Nutri<b>Pulse</b></div><small>${P.name?'Hi, '+esc(P.name):''}</small></div>
+  <div class="top"><div class="brand">Nutri<b>Pulse</b></div><small>${P.name?tr('Hi, {name}',{name:esc(P.name)}):''}</small></div>
   <div class="nav"><button onclick="moveDay(-1)">‹</button><b style="min-width:110px;text-align:center">${label}</b><button onclick="moveDay(1)" ${isT?'disabled':''}>›</button></div>
   <div class="card ring">
     <div style="position:relative;display:flex;align-items:center;justify-content:center">
       <svg viewBox="0 0 110 110"><circle cx="55" cy="55" r="45" fill="none" stroke="var(--field)" stroke-width="10"/><circle cx="55" cy="55" r="45" fill="none" stroke="${left<0?'var(--red)':'var(--acc)'}" stroke-width="10" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C*(1-pct)}"/></svg>
-      <div class="mid"><b>${Math.abs(Math.round(left))}</b><small>kcal ${left<0?'over':'left'}</small></div>
+      <div class="mid"><b>${Math.abs(Math.round(left))}</b><small>${tr(left<0?'kcal over':'kcal left')}</small></div>
     </div>
-    <div style="flex:1"><div class="kv"><span class="mut">Goal</span><b>${t.kcal}</b></div><div class="kv"><span class="mut">Eaten</span><b>${Math.round(tot.k)}</b></div></div>
+    <div style="flex:1"><div class="kv"><span class="mut">${tr('Goal')}</span><b>${t.kcal}</b></div><div class="kv"><span class="mut">${tr('Eaten')}</span><b>${Math.round(tot.k)}</b></div></div>
   </div>
   <div class="card">${bar('Protein',tot.p,t.prot)}${bar('Carbs',tot.c,t.carb)}${bar('Fat',tot.f,t.fat)}</div>
-  <div class="card"><h2>Micronutrients</h2><small>Daily reference values for your profile. Sodium is a limit.</small><div style="margin-top:14px">${miRows(sumMi(L),t.mi,false)}</div></div>
-  <div class="card"><div class="top"><div><h2>Water</h2><small>${w} / ${t.water} ml</small></div><div class="row" style="gap:8px"><button onclick="addWater(-250)">−</button><button onclick="addWater(250)" style="white-space:nowrap">+ 250 ml</button></div></div><div class="bar" style="margin:14px 0 0"><i style="width:${Math.min(100,w/t.water*100)}%"></i></div></div>
+  <div class="card"><h2>${tr('Micronutrients')}</h2><small>${tr('Daily reference values for your profile. Sodium is a limit.')}</small><div style="margin-top:14px">${miRows(sumMi(L),t.mi,false)}</div></div>
+  <div class="card"><div class="top"><div><h2>${tr('Water')}</h2><small>${w} / ${t.water} ml</small></div><div class="row" style="gap:8px"><button onclick="addWater(-250)">−</button><button onclick="addWater(250)" style="white-space:nowrap">+ 250 ml</button></div></div><div class="bar" style="margin:14px 0 0"><i style="width:${Math.min(100,w/t.water*100)}%"></i></div></div>
   ${sug}
-  ${isPro()?'':`<div class="card"><span class="tag">Sponsored</span><h2>Recipe of the week</h2><small>Demo sponsor slot. Local food brands can feature a nutritionist-reviewed recipe here. Pro removes ads.</small></div>`}
-  ${MEALS.map(m=>{const es=L.map((e,i)=>({e,i})).filter(x=>x.e.meal===m);return `<div class="card meal"><div class="head"><div><h2>${m}</h2><small>${Math.round(sum(es.map(x=>x.e)).k)} kcal</small></div><button onclick="addTo('${m}')">+ Add</button></div>
-    ${es.map(({e,i})=>`<div class="entry"><div><div>${esc(e.name)}</div><small>${e.g} g · P ${r1(e.p)} · C ${r1(e.c)} · F ${r1(e.f)}</small></div><div><b>${Math.round(e.k)} kcal</b><button class="x" onclick="delEntry(${i})">×</button></div></div>`).join('')}</div>`}).join('')}`;
+  ${MEALS.map(m=>{const es=L.map((e,i)=>({e,i})).filter(x=>x.e.meal===m);return `<div class="card meal"><div class="head"><div><h2>${tr(m)}</h2><small>${Math.round(sum(es.map(x=>x.e)).k)} kcal</small></div><button onclick="addTo('${m}')">${tr('+ Add')}</button></div>
+    ${es.map(({e,i})=>`<div class="entry"><div><div>${esc(tr(e.name))}</div><small>${e.g} g · ${mac(r1(e.p),r1(e.c),r1(e.f))}</small></div><div><b>${Math.round(e.k)} kcal</b><button class="x" onclick="delEntry(${i})">×</button></div></div>`).join('')}</div>`}).join('')}`;
 }
 function moveDay(n){const d=new Date(vd+'T12:00');d.setDate(d.getDate()+n);const s=dstr(d);if(s<=todayStr()){vd=s;renderToday()}}
 function addWater(n){S.water[vd]=Math.max(0,(S.water[vd]||0)+n);save();renderToday()}
@@ -314,32 +474,32 @@ function addTo(m){pendingMeal=m;showTab('foods')}
 
 /* ---------- Foods ---------- */
 function renderFoods(){
-  $('chips').innerHTML=CATS.map(c=>`<button class="${c===cat?'on':''}" onclick="cat='${c}';renderFoods()">${c}</button>`).join('');
-  $('ri').innerHTML=allFoods().map(f=>`<option value="${f.id}">${esc(f.name)}</option>`).join('');
+  $('chips').innerHTML=CATS.map(c=>`<button class="${c===cat?'on':''}" onclick="cat='${c}';renderFoods()">${tr(c)}</button>`).join('');
+  $('ri').innerHTML=allFoods().map(f=>`<option value="${f.id}">${esc(tr(f.name))}</option>`).join('');
   renderList(); renderRecipe();
 }
 function renderList(){
   const q=$('q').value.trim().toLowerCase();
-  const list=allFoods().filter(f=>(cat==='All'||(cat==='My foods'?f.id[0]==='c':f.cat===cat))&&f.name.toLowerCase().includes(q));
-  $('count').textContent=allFoods().length+' foods';
-  $('flist').innerHTML=list.length?list.map(f=>`<div class="food" onclick="openAdd('${f.id}')"><div><b>${esc(f.name)}</b><br><small>${f.cat} · per 100 g</small></div><div class="r"><b>${Math.round(f.k)} kcal</b><br><small>P ${f.p} · C ${f.c} · F ${f.f}</small></div></div>`).join(''):'<p class="mut" style="padding:12px 0">No foods found. Create a custom food below.</p>';
+  const list=allFoods().filter(f=>(cat==='All'||(cat==='My foods'?f.id[0]==='c':f.cat===cat))&&(f.name.toLowerCase().includes(q)||tr(f.name).toLowerCase().includes(q))).sort((a,b)=>tr(a.name).localeCompare(tr(b.name),S.lang));
+  $('count').textContent=tr('{n} foods',{n:allFoods().length});
+  $('flist').innerHTML=list.length?list.map(f=>`<div class="food" onclick="openAdd('${f.id}')"><div><b>${esc(tr(f.name))}</b><br><small>${tr(f.cat)} · ${tr('per 100 g')}</small></div><div class="r"><b>${Math.round(f.k)} kcal</b><br><small>${mac(f.p,f.c,f.f)}</small></div></div>`).join(''):`<p class="mut" style="padding:12px 0">${tr('No foods found. Create a custom food below.')}</p>`;
 }
 function findBarcode(){
   const b=$('bc').value.trim(),f=allFoods().find(x=>x.bc&&x.bc===b);
-  if(!b)return; f?openAdd(f.id):alert('No food with that barcode yet. Create a custom food and add its barcode.');
+  if(!b)return; f?openAdd(f.id):alert(tr('No food with that barcode yet. Create a custom food and add its barcode.'));
 }
 function saveCustom(){
   const n=$('cn').value.trim(),k=+$('ck').value,p=+$('cp').value,c=+$('cc').value,f=+$('cf').value;
-  if(!n||!$('ck').value){alert('Enter a name and calories per 100 g.');return}
+  if(!n||!$('ck').value){alert(tr('Enter a name and calories per 100 g.'));return}
   S.custom.push({id:'c'+Date.now(),name:n,cat:'My foods',k,p,c,f,s:+$('cs').value||100,sl:'1 serving',bc:$('cb').value.trim(),m:[0,1,2,3,4,5].map(i=>+$('cm'+i).value||0)});
   save();['cn','ck','cp','cc','cf','cs','cb','cm0','cm1','cm2','cm3','cm4','cm5'].forEach(i=>$(i).value='');cat='My foods';renderFoods();
 }
 function addIng(){const g=+$('rg').value;if(!g)return;recipe.push({id:$('ri').value,g});$('rg').value='';renderRecipe()}
 function renderRecipe(){
-  $('rlist').innerHTML=recipe.map((r,i)=>{const f=allFoods().find(x=>x.id===r.id);return `<div class="entry"><span>${esc(f.name)} · ${r.g} g</span><button class="x" onclick="recipe.splice(${i},1);renderRecipe()">×</button></div>`}).join('');
+  $('rlist').innerHTML=recipe.map((r,i)=>{const f=allFoods().find(x=>x.id===r.id);return `<div class="entry"><span>${esc(tr(f.name))} · ${r.g} g</span><button class="x" onclick="recipe.splice(${i},1);renderRecipe()">×</button></div>`}).join('');
 }
 function saveRecipe(){
-  const n=$('rn').value.trim(); if(!n||!recipe.length){alert('Enter a name and add at least one ingredient.');return}
+  const n=$('rn').value.trim(); if(!n||!recipe.length){alert(tr('Enter a name and add at least one ingredient.'));return}
   let G=0,k=0,p=0,c=0,f=0;const M=[0,0,0,0,0,0];
   recipe.forEach(r=>{const x=allFoods().find(y=>y.id===r.id);mi(x).forEach((v,j)=>M[j]+=v*r.g/100);G+=r.g;k+=x.k*r.g/100;p+=x.p*r.g/100;c+=x.c*r.g/100;f+=x.f*r.g/100});
   const per=v=>r1(v/G*100);
@@ -352,12 +512,12 @@ let cur=null;
 function openAdd(id){
   cur=allFoods().find(f=>f.id===id);
   const f=cur;
-  $('sheet').innerHTML=`<div class="top"><h2>${esc(f.name)}</h2><button onclick="closeModal()" style="width:36px;height:36px;padding:0">×</button></div>
-  <small>Per 100 g: ${f.k} kcal · P ${f.p} g · C ${f.c} g · F ${f.f} g</small>
-  <div class="row"><div><label>Amount (g)</label><input id="ag" type="number" inputmode="decimal" value="${f.s}" oninput="fromG()"></div><div><label>Servings</label><input id="as" type="number" inputmode="decimal" step="0.1" value="1" oninput="fromS()"></div></div>
-  <label>Meal</label><select id="am">${MEALS.map(m=>`<option ${m===pendingMeal?'selected':''}>${m}</option>`).join('')}</select>
-  <small style="display:block;margin-top:8px">Typical serving: ${esc(f.sl)} ≈ ${f.s} g</small>
-  <div id="avis"></div><div class="sum" id="asum"></div><button class="btn" onclick="confirmAdd()">Add to today</button>`;
+  $('sheet').innerHTML=`<div class="top"><h2>${esc(tr(f.name))}</h2><button onclick="closeModal()" style="width:36px;height:36px;padding:0">×</button></div>
+  <small>${tr('Per 100 g')}: ${f.k} kcal · ${mac(f.p+' g',f.c+' g',f.f+' g')}</small>
+  <div class="row"><div><label>${tr('Amount (g)')}</label><input id="ag" type="number" inputmode="decimal" value="${f.s}" oninput="fromG()"></div><div><label>${tr('Servings')}</label><input id="as" type="number" inputmode="decimal" step="0.1" value="1" oninput="fromS()"></div></div>
+  <label>${tr('Meal')}</label><select id="am">${MEALS.map(m=>`<option value="${m}" ${m===pendingMeal?'selected':''}>${tr(m)}</option>`).join('')}</select>
+  <small style="display:block;margin-top:8px">${tr('Typical serving')}: ${esc(tr(f.sl))} ≈ ${f.s} g</small>
+  <div id="avis"></div><div class="sum" id="asum"></div><button class="btn" onclick="confirmAdd()">${tr('Add to today')}</button>`;
   $('modal').classList.add('on'); calc();
 }
 function closeModal(){$('modal').classList.remove('on')}
@@ -365,8 +525,8 @@ function fromG(){$('as').value=r1((+$('ag').value||0)/cur.s);calc()}
 function fromS(){$('ag').value=Math.round((+$('as').value||0)*cur.s);calc()}
 function calc(){
   const g=+$('ag').value||0,f=cur,m=x=>x*g/100;
-  $('avis').innerHTML=`<div class="vis">${donut(m(f.p),m(f.c),m(f.f),m(f.k))}</div><h2 style="margin-top:18px">Micronutrients</h2><small>Share of your daily target in this amount</small><div style="margin-top:12px">${miRows(mi(f).map(m),targets(S.profile).mi,true)}</div>`;
-  $('asum').innerHTML=`<span><b>${Math.round(m(f.k))}</b> kcal</span><span>P <b>${r1(m(f.p))}</b> g</span><span>C <b>${r1(m(f.c))}</b> g</span><span>F <b>${r1(m(f.f))}</b> g</span>`;
+  $('avis').innerHTML=`<div class="vis">${donut(m(f.p),m(f.c),m(f.f),m(f.k))}</div><h2 style="margin-top:18px">${tr('Micronutrients')}</h2><small>${tr('Share of your daily target in this amount')}</small><div style="margin-top:12px">${miRows(mi(f).map(m),targets(S.profile).mi,true)}</div>`;
+  $('asum').innerHTML=`<span><b>${Math.round(m(f.k))}</b> kcal</span><span>${tr('P')} <b>${r1(m(f.p))}</b> g</span><span>${tr('C')} <b>${r1(m(f.c))}</b> g</span><span>${tr('F')} <b>${r1(m(f.f))}</b> g</span>`;
 }
 function confirmAdd(){
   const g=+$('ag').value||0; if(g<=0)return; const f=cur,m=x=>x*g/100,d=todayStr();
@@ -377,36 +537,35 @@ function confirmAdd(){
 /* ---------- Pro (demo, no real payments) ---------- */
 function renderPro(){
   const pan=S.pantry.map(id=>allFoods().find(f=>f.id===id)).filter(Boolean);
-  const total=pan.reduce((a,f)=>a+PRICE_KG[f.cat]*0.5,0);
-  $('pro').innerHTML=`<h1>NutriPulse Pro</h1>
-  <div class="card"><h2>Cook with what you have</h2>
-    <ul class="f"><li>Pantry-to-Plate: recipes made from your pantry</li><li>Gram-precise portions that fill your remaining macros</li><li>Smart suggestions on the Today tab</li><li>Grocery list with local price estimates, shareable on WhatsApp</li><li>No ads</li></ul>
-    ${isPro()?`<p style="color:var(--acc);font-weight:700">Pro active until ${new Date(S.pro).toLocaleDateString()}</p>`:`<button class="btn" onclick="S.pro=Date.now()+7*864e5;save();renderPro()">Start 7-day free trial</button><small style="display:block;margin-top:8px">Demo: no payment needed. The trial unlocks Pro on this device.</small>`}
+  const rs=matchRecipes().slice(0,5);
+  $('pro').innerHTML=`<h1>${tr('NutriPulse Pro')}</h1>
+  <div class="card"><h2>${tr('Cook with what you have')}</h2>
+    <ul class="f">${FEATS.map(x=>`<li>${tr(x)}</li>`).join('')}</ul>
+    ${isPro()?`<p style="color:var(--acc);font-weight:700">${proText()}</p>`:`<button class="btn" onclick="startTrial()">${tr('Start 7-day free trial')}</button><small style="display:block;margin-top:8px">${tr('Demo: no payment needed. The trial unlocks Pro on this device.')}</small>`}
   </div>
-  ${isPro()?`<div class="card"><h2>My pantry</h2>
-    <div class="row" style="align-items:end"><select id="pp">${allFoods().map(f=>`<option value="${f.id}">${esc(f.name)}</option>`).join('')}</select><button style="flex:0 0 auto" onclick="addPantry()">Add</button></div>
-    ${pan.map(f=>`<div class="entry"><span>${esc(f.name)}</span><button class="x" onclick="S.pantry=S.pantry.filter(i=>i!=='${f.id}');save();renderPro()">×</button></div>`).join('')||'<p class="mut">Your pantry is empty.</p>'}</div>
-  <div class="card"><h2>Fits your remaining macros</h2>${suggestions().map(s=>`<div class="entry"><span>${esc(s.f.name)} · ${s.g} g</span><b>${s.k} kcal</b></div>`).join('')||'<p class="mut">Add protein foods to your pantry.</p>'}</div>
-  <div class="card"><h2>Grocery list</h2><small>Prices are placeholders (about 500 g each).</small>${pan.map(f=>`<div class="entry"><span>${esc(f.name)}</span><span>Bs ${Math.round(PRICE_KG[f.cat]*.5)}</span></div>`).join('')}
-    <div class="entry"><b>Total</b><b>Bs ${Math.round(total)}</b></div><button class="btn" onclick="shareList()">Share on WhatsApp</button></div>`:''}
-  <div class="card"><h2>Plans</h2>${PLANS.map(p=>`<div class="plan"><span>${p[0]}</span><b>${p[1]}</b></div>`).join('')}</div>`;
+  ${isPro()?`<div class="card"><h2>${tr('My pantry')}</h2>
+    <div class="row" style="align-items:end"><select id="pp">${allFoods().map(f=>`<option value="${f.id}">${esc(tr(f.name))}</option>`).join('')}</select><button style="flex:0 0 auto" onclick="addPantry()">${tr('Add')}</button></div>
+    ${pan.map(f=>`<div class="entry"><span>${esc(tr(f.name))}</span><button class="x" onclick="S.pantry=S.pantry.filter(i=>i!=='${f.id}');save();renderPro()">×</button></div>`).join('')||`<p class="mut" style="margin-top:10px">${tr('Your pantry is empty.')}</p><button class="btn" onclick="starterPantry()">${tr('Add a starter pantry')}</button>`}</div>
+  <div class="card"><h2>${tr('Recipes from your pantry')}</h2><small>${tr('Portions are scaled in grams to a meal-sized share (about 30%) of your day, never more than your remaining calories.')}</small>${rs.map(x=>recipeCard(x,true)).join('')||`<p class="mut" style="margin-top:10px">${tr('Add a few foods to your pantry to see recipes you can make.')}</p>`}</div>
+  ${portionsCard()}${groceryCard()}`:''}
+  <div class="card"><h2>${tr('Plans')}</h2>${PLANS.map(p=>`<div class="plan"><span>${tr(p[0])}</span><b>${tr(p[1])}</b></div>`).join('')}</div>`;
 }
 function addPantry(){const id=$('pp').value;if(!S.pantry.includes(id))S.pantry.push(id);save();renderPro()}
 function shareList(){
-  const pan=S.pantry.map(id=>allFoods().find(f=>f.id===id)).filter(Boolean);
-  const t='Grocery list (NutriPulse)\n'+pan.map(f=>`- ${f.name} (Bs ${Math.round(PRICE_KG[f.cat]*.5)})`).join('\n');
+  const gl=groceryItems();
+  const t=tr('Grocery list (NutriPulse)')+'\n'+gl.map(x=>`- ${tr(x.f.name)}, ${x.g} g (Bs ${gPrice(x)})`).join('\n')+`\n${tr('Total')}: Bs ${gl.reduce((a,x)=>a+gPrice(x),0)}`;
   window.open('https://wa.me/?text='+encodeURIComponent(t),'_blank');
 }
 
 /* ---------- Profile ---------- */
 function renderProfile(){
   const p=S.profile;
-  $('ptitle').textContent=S.setup?'Profile':'Welcome to NutriPulse';
+  $('ptitle').textContent=tr(S.setup?'Profile':'Welcome to NutriPulse');
   $('pwelcome').style.display=S.setup?'none':'block';
   $('pn').value=p.name;$('ps').value=p.sex;$('pa').value=p.age;$('ph').value=p.h;$('pw').value=p.w;$('pact').value=String(p.act);$('pg').value=p.goal;
   const t=targets(p);
-  $('ptargets').innerHTML=`<span>Calories <b>${t.kcal}</b></span><span>Protein <b>${t.prot} g</b></span><span>Carbs <b>${t.carb} g</b></span><span>Fat <b>${t.fat} g</b></span><span>Water <b>${t.water} ml</b></span>`;
-  $('pnote').textContent=`Resting energy (BMR) ${t.bmr} kcal · Maintenance (TDEE) ${t.tdee} kcal. Protein is set per kg of body weight, fat is 25% of calories, and carbs fill the rest.`+(t.minorCap?' Under 18: calorie deficits are not set. Talk to a doctor before trying to lose weight.':'');
+  $('ptargets').innerHTML=`<span>${tr('Calories')} <b>${t.kcal}</b></span><span>${tr('Protein')} <b>${t.prot} g</b></span><span>${tr('Carbs')} <b>${t.carb} g</b></span><span>${tr('Fat')} <b>${t.fat} g</b></span><span>${tr('Water')} <b>${t.water} ml</b></span>`;
+  $('pnote').textContent=tr('Resting energy (BMR) {bmr} kcal · Maintenance (TDEE) {tdee} kcal. Protein is set per kg of body weight, fat is 25% of calories, and carbs fill the rest.',{bmr:t.bmr,tdee:t.tdee})+(t.minorCap?' '+tr('Under 18: calorie deficits are not set. Talk to a doctor before trying to lose weight.'):'');
 }
 function saveProfile(){
   const n=(id,d)=>+$(id).value>0?+$(id).value:d;
@@ -415,10 +574,11 @@ function saveProfile(){
   save();first?showTab('today'):renderProfile();
 }
 function eraseAll(){
-  if(!confirm('Erase all your data from this browser? This cannot be undone.'))return;
-  try{localStorage.removeItem(KEY)}catch(e){} S=fresh();vd=todayStr();showTab('profile');
+  if(!confirm(tr('Erase all your data from this browser? This cannot be undone.')))return;
+  const lang=S.lang;try{localStorage.removeItem(KEY)}catch(e){} S=fresh();S.lang=lang;vd=todayStr();showTab('profile');
 }
 
+applyLang();
 showTab(S.setup?'today':'profile');
 </script>
 </body>
